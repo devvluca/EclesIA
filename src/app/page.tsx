@@ -9,7 +9,7 @@ import ChurchBanner from "@/img/banner_episcopal.jpg";
 import { useRef } from "react";
 
 export default function Home() {
-  const ctaRef = useRef(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
 
   const scrollToCTA = () => {
     ctaRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -29,10 +29,10 @@ export default function Home() {
               Chat
             </Link>
             <Link href="/about" className="text-foreground hover:text-primary">
-              About
+              Sobre Nós
             </Link>
             <Link href="/contact" className="text-foreground hover:text-primary">
-              Contact
+              Contato
             </Link>
             <Button variant="outline">Login</Button>
           </div>
@@ -114,7 +114,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-background py-8 shadow-top mt-auto relative z-20">
         <div className="container mx-auto px-6 text-center text-muted-foreground">
-          <p>© 2024 EclesIA. Todos os direitos reservados.</p>
+          <p>© 2025 EclesIA. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
