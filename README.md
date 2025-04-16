@@ -19,10 +19,10 @@ Criar uma ferramenta acessível e acolhedora que auxilie fiéis, curiosos e memb
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Frontend:** Firebase Studio (HTML/CSS)
-- **Backend:** Firebase Cloud Functions + OpenAI + LangChain
-- **Banco de Dados:** Firestore
-- **Integração IA:** OpenAI GPT (com LangChain para contexto)
+- **Frontend:** Next.js e Tailwind.css
+- **Backend:** Python (Flask)
+- **Banco de Dados:** SQlite
+- **Integração IA:** Gemini
 - **Hospedagem:** Firebase Hosting
 
 ---
@@ -33,12 +33,6 @@ Criar uma ferramenta acessível e acolhedora que auxilie fiéis, curiosos e memb
 - 📜 Conhecimento baseado em textos doutrinários, históricos e litúrgicos
 - 🎨 Interface limpa, responsiva e com estética marrom madeira
 - 🔒 Sistema preparado para futuras autenticações e personalizações
-
----
-
-## 🚀 Como Rodar Localmente (em breve)
-
-> *Por enquanto, o projeto está disponível e funcionando via Firebase Studio. Em breve, publicaremos o passo a passo para rodar localmente e contribuir com o desenvolvimento.*
 
 ---
 
