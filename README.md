@@ -1,8 +1,13 @@
 # ✝️ EclesIA — Inteligência Artificial Eclesiástica
 
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+
 **EclesIA** é um aplicativo web que une fé e tecnologia, oferecendo um **chatbot inteligente treinado para responder perguntas sobre a Igreja Episcopal Carismática do Brasil** e suas raízes anglicanas. Feito com carinho, propósito e uma paleta marrom madeira que remete à tradição, acolhimento e espiritualidade.
 
-![Banner](https://via.placeholder.com/1000x300.png?text=EclesIA+%7C+Chatbot+da+Igreja+Episcopal+Carism%C3%A1tica)
 
 ---
 
@@ -19,9 +24,9 @@ Criar uma ferramenta acessível e acolhedora que auxilie fiéis, curiosos e memb
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Frontend:** Next.js e Tailwind.css
+- **Frontend:** Next.js e Tailwind CSS
 - **Backend:** Python (Flask)
-- **Banco de Dados:** SQlite
+- **Banco de Dados:** SQLite
 - **Integração IA:** Gemini
 - **Hospedagem:** Firebase Hosting
 
@@ -61,3 +66,7 @@ Este projeto é de código aberto sob a licença MIT.
 ---
 
 > ✝️ *"Pois onde estiverem dois ou três reunidos em meu nome, ali estarei no meio deles."* — Mateus 18:20
+
+---
+
+Feito com 🙏 por [Luca Aguiar Nobre](https://github.com/devvluca) • © 2025
