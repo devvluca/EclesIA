@@ -68,7 +68,7 @@ const ChatPage = () => {
               <p className="text-sm text-gray-500">Online</p>
             </div>
           </div>
-          <Link href="/" className="text-foreground hover:text-primary">
+          <Link href="/" className="text-foreground hover:text-[color:#8B4513]">
             <Button variant="outline" size="icon">
               <Icons.home className="h-4 w-4" />
             </Button>

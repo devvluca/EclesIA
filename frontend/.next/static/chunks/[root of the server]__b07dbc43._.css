@@ -2072,6 +2072,11 @@ body {
   background-color: hsl(var(--sidebar-accent));
 }
 
+.hover\:text-\[color\:\#8B4513\]:hover {
+  --tw-text-opacity: 1;
+  color: rgb(139 69 19 / var(--tw-text-opacity, 1));
+}
+
 .hover\:text-accent-foreground:hover {
   color: hsl(var(--accent-foreground));
 }
@@ -2080,8 +2085,9 @@ body {
   color: hsl(var(--foreground));
 }
 
-.hover\:text-primary:hover {
-  color: hsl(var(--primary));
+.hover\:text-gray-600:hover {
+  --tw-text-opacity: 1;
+  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
 }
 
 .hover\:text-primary-foreground:hover {
