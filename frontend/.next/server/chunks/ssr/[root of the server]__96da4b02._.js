@@ -178,7 +178,7 @@ const Icons = {
 
 var { g: global, __dirname } = __turbopack_context__;
 {
-__turbopack_context__.v("/_next/static/media/episcopal_logo.bd33bae8.png");}}),
+__turbopack_context__.v("/_next/static/media/episcopal_logo.a1f001f3.png");}}),
 "[project]/src/img/episcopal_logo.png.mjs { IMAGE => \"[project]/src/img/episcopal_logo.png (static in ecmascript)\" } [app-ssr] (structured image object, ecmascript)": ((__turbopack_context__) => {
 "use strict";
 
@@ -193,7 +193,7 @@ const __TURBOPACK__default__export__ = {
     src: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$img$2f$episcopal_logo$2e$png__$28$static__in__ecmascript$29$__["default"],
     width: 1024,
     height: 1024,
-    blurDataURL: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAyUlEQVR42pWOQQvBcADF//szNpraVjOlTe0wSpGDy6RchKvsIilFchL7AnJw2YGc5rjmSsmKk5KLi4uDgw/g4rQvMDYnN17v9t779QD4RRQRiIocK8X5SI5n6bQXQj9EgMcNkbcbZUnVBrK112fWcjq6pXi6yhBo8lNAAOzViouVOrTPW8Pe6fOnJLLdGIXlnbFDgEq7rt0vJ/t6NO3D2nhkBabJkX7JGbuUTEIoTZSOOe63NnKloJBBH4+jkPw6SuBoGEO9IfCvXgNfK47nf+KZAAAAAElFTkSuQmCC",
+    blurDataURL: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAA8UlEQVR42oWOO2vCcADE/480iW1tkymlVLTQUlAwFELpUoqig6AEHcQHIoiLkM0XLg46iCJOIiiKILgp6OokiBhwcPQr+AEcJX8fg4iLv+Xg7jgOgFsgCLD5lXc4raaEW/pIyL+f8RdOZ6QppIMQIMBgxGV9f7Om4tWm3aK2nrR2Ubu5IJme5Xsac4ClEJ8LONROKkQmzTxZjetEcVl74pvew1Do4bjAl5Sgqo5bZDGsk+WoocWcYvvb8BR6ZLAAMIKs3yaV+5XUZlDLbKvJyFx8F2RBT1tOH45gCNl/izH982UIs3eIPweXHErMQeC1vweTXzaPl+V6pgAAAABJRU5ErkJggg==",
     blurWidth: 8,
     blurHeight: 8
 };
