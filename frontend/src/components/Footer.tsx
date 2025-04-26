@@ -36,8 +36,8 @@ const Footer = () => {
           </div>
           <div>
             <h3 className="text-cream-light text-xl mb-4 font-serif">Contato</h3>
-            <p className="text-cream/80 mb-2">contato@igrejaiebc.org</p>
-            <p className="text-cream/80">+55 (XX) XXXX-XXXX</p>
+            <p className="text-cream/80 mb-2">juv@recon.com.br</p>
+            <p className="text-cream/80">+55 (81) 99516-7157</p>
           </div>
         </div>
         <div className="border-t border-cream/10 pt-6 mt-6 text-center text-cream/60 text-sm">

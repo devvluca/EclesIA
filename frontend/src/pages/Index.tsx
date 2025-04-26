@@ -15,12 +15,20 @@ const Index = () => {
       <section className="relative min-h-screen flex items-center">
         {/* Background Image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center z-0"
-          style={{
-            backgroundImage: 'url("/img/banner_episcopal.jpg")',
-            backgroundSize: 'cover',
-          }}
-        />
+        className="absolute inset-0 bg-cover bg-center z-0"
+        style={{
+          backgroundImage: 'url("/img/banner_episcopal.jpg")',
+          backgroundSize: '100% 100%', // Ajusta a imagem para caber no container sem cortar
+          // Outras opções:
+          // 'auto': Usa o tamanho original da imagem
+          // 'cover': Preenche o container, pode cortar a imagem
+          // '100% 100%': Estica a imagem para preencher o container
+          // 'initial': Usa o valor padrão do navegador
+          // 'inherit': Herda o valor do elemento pai
+    backgroundRepeat: 'no-repeat', // Evita repetição
+    backgroundPosition: 'center', // Centraliza a imagem
+  }}
+/>
         
         {/* Overlay for better text visibility */}
         <div className="absolute inset-0 bg-wood-darkest/40 z-1" />
