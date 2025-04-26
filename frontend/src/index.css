@@ -1,0 +1,89 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 32 56% 94%;
+    --foreground: 30 35% 15%;
+
+    --card: 30 40% 96%;
+    --card-foreground: 30 35% 15%;
+
+    --popover: 30 40% 96%;
+    --popover-foreground: 30 35% 15%;
+
+    --primary: 30 60% 32%;
+    --primary-foreground: 30 10% 95%;
+
+    --secondary: 30 30% 85%;
+    --secondary-foreground: 30 35% 15%;
+
+    --muted: 30 20% 90%;
+    --muted-foreground: 30 20% 40%;
+
+    --accent: 30 40% 85%;
+    --accent-foreground: 30 35% 15%;
+
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 30 10% 95%;
+
+    --border: 30 30% 80%;
+    --input: 30 30% 80%;
+    --ring: 30 60% 32%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 30 40% 96%;
+    --sidebar-foreground: 30 35% 15%;
+    --sidebar-primary: 30 60% 32%;
+    --sidebar-primary-foreground: 30 10% 95%;
+    --sidebar-accent: 30 30% 85%;
+    --sidebar-accent-foreground: 30 35% 15%;
+    --sidebar-border: 30 30% 80%;
+    --sidebar-ring: 30 60% 32%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-cream font-sans text-foreground;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-wood-dark;
+  }
+  
+  .btn-primary {
+    @apply bg-wood text-cream-light py-3 px-6 rounded-full font-medium hover:bg-wood-dark transition-all duration-300;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent border-2 border-wood text-wood py-3 px-6 rounded-full font-medium hover:bg-wood hover:text-cream-light transition-all duration-300;
+  }
+
+  .card-feature {
+    @apply bg-cream border border-wood/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300;
+  }
+  
+  .feature-icon {
+    @apply bg-cream-light w-20 h-20 flex items-center justify-center rounded-full mx-auto mb-4;
+  }
+  
+  .chat-message {
+    @apply p-4 rounded-2xl max-w-[80%] mb-4;
+  }
+  
+  .chat-message.user {
+    @apply bg-wood text-cream-light ml-auto;
+  }
+  
+  .chat-message.bot {
+    @apply bg-cream border border-wood/20 mr-auto;
+  }
+}

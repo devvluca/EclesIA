@@ -1,0 +1,55 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
+
+const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  return (
+    <nav className="bg-cream-light/80 backdrop-blur-sm fixed w-full z-50 shadow-sm">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center space-x-2">
+          <img 
+            src="/img/episcopal_logo.png"  
+            alt="EclesIA Logo" 
+            className="h-10 w-10" 
+          />
+          <span className="text-wood-dark font-serif text-xl font-semibold">EclesIA</span>
+        </Link>
+
+        <div className="hidden md:flex items-center space-x-6">
+          <Link to="/" className="text-wood-dark hover:text-wood transition-colors">Início</Link>
+          <Link to="/sobre" className="text-wood-dark hover:text-wood transition-colors">Sobre nós</Link>
+          <Link to="/chat">
+            <Button className="bg-wood hover:bg-wood-dark text-cream-light">Iniciar conversa</Button>
+          </Link>
+        </div>
+
+        <div className="md:hidden">
+          <button onClick={toggleMenu} className="text-wood-dark focus:outline-none">
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {isMenuOpen && (
+        <div className="md:hidden bg-cream-light border-t border-wood/10 animate-fade-in">
+          <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+            <Link to="/" className="text-wood-dark hover:text-wood px-4 py-2 rounded-md" onClick={toggleMenu}>Início</Link>
+            <Link to="/sobre" className="text-wood-dark hover:text-wood px-4 py-2 rounded-md" onClick={toggleMenu}>Sobre nós</Link>
+            <Link to="/chat" onClick={toggleMenu}>
+              <Button className="bg-wood hover:bg-wood-dark text-cream-light w-full">Iniciar conversa</Button>
+            </Link>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default Navbar;
