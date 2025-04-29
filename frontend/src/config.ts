@@ -1,0 +1,2 @@
+export const HUGGINGFACE_API_TOKEN = import.meta.env.VITE_HUGGINGFACE_API_TOKEN;
+export const HUGGINGFACE_MODEL = import.meta.env.VITE_HUGGINGFACE_MODEL;

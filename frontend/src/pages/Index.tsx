@@ -34,7 +34,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-wood-darkest/40 z-1" />
         
         {/* Content */}
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-2 relative z-20">
           <div className="md:w-1/2 animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight text-cream">
               Conversas Sagradas <br/>com <span className="text-cream-light">EclesIA</span>
