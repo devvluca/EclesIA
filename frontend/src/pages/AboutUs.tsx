@@ -110,7 +110,7 @@ const AboutUs = () => {
       {/* CTA Section */}
       <section className="py-16 bg-wood text-cream">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6 font-serif">Tire suas dúvidas com o EclesIA</h2>
+          <h2 className="text-3xl font-bold mb-6 font-serif text-cream-light/100">Tire suas dúvidas com o EclesIA</h2>
           <p className="text-cream-light/90 max-w-2xl mx-auto mb-8">
             Inicie uma conversa com nossa IA e aprenda mais sobre a Igreja Episcopal Carismática do Brasil e a tradição Anglicana.
           </p>

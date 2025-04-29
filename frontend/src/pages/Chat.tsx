@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
@@ -121,6 +121,8 @@ const Chat = () => {
         }
         return updatedMessages;
       });
+
+      scrollToBottom(); // Ensure scroll after response is updated
     } catch (error) {
       toast({
         title: "Erro ao processar mensagem",
@@ -133,6 +135,14 @@ const Chat = () => {
     }
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar />
@@ -142,7 +152,7 @@ const Chat = () => {
           <div className="bg-wood p-4 text-cream-light flex items-center">
             <img src="/img/episcopal_logo.png" alt="EclesIA Logo" className="h-8 mr-3" />
             <div>
-              <h2 className="font-serif text-lg">EclesIA</h2>
+              <h2 className="font-serif text-lg text-cream">EclesIA</h2>
               <p className="text-xs text-cream/80">Assistente da Igreja Episcopal Carismática</p>
             </div>
           </div>

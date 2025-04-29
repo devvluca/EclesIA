@@ -40,3 +40,10 @@ next-env.d.ts
 .genkit/*
 
 node_modules/
+
+# Local IDE configurations
+.vscode/
+.idea/
+
+# Cache directories
+.cache/
