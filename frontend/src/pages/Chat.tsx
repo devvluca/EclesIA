@@ -16,7 +16,7 @@ const suggestedQuestions = [
   "O que é o batismo na IECB?",
 ];
 
-const Chat = () => {
+const Chat = ({ onAuthModalToggle }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -156,7 +156,7 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
-      <Navbar onAuthModalToggle={() => console.log('Auth modal toggled')} />
+      <Navbar onAuthModalToggle={onAuthModalToggle} />
 
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-4xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-200px)] flex flex-col">

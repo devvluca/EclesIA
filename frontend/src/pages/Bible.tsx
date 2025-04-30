@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import axios from 'axios';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const Bible = () => {
+const Bible = ({ onAuthModalToggle }) => {
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [chapters, setChapters] = useState([]);
@@ -17,9 +18,10 @@ const Bible = () => {
   const [isBoxVisible, setIsBoxVisible] = useState(false);
   const [boxPosition, setBoxPosition] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState('nvi'); // Versão atual da Bíblia
+  const [showChapters, setShowChapters] = useState(false); // Controle para exibir a tabela de capítulos
 
   const API_URL = 'https://www.abibliadigital.com.br/api';
-  const API_VERSION = 'nvi'; // Versão da Bíblia
   const API_TOKEN = import.meta.env.VITE_BIBLIA_API_TOKEN; // Token da API
 
   useEffect(() => {
@@ -44,12 +46,12 @@ const Bible = () => {
     setChapters(Array.from({ length: book.chapters }, (_, i) => i + 1));
     setSelectedChapter(null);
     setVerses([]);
+    setShowChapters(true); // Exibe a tabela de capítulos
   };
 
-  const handleChapterSelect = async (chapter) => {
-    setSelectedChapter(chapter);
+  const fetchChapter = async (bookAbbrev, chapter) => {
     try {
-      const response = await axios.get(`${API_URL}/verses/${API_VERSION}/${selectedBook.abbrev.pt}/${chapter}`, {
+      const response = await axios.get(`${API_URL}/verses/${currentVersion}/${bookAbbrev}/${chapter}`, {
         headers: {
           Authorization: `Bearer ${API_TOKEN}`,
         },
@@ -58,6 +60,12 @@ const Bible = () => {
     } catch (error) {
       console.error('Erro ao carregar os versículos:', error);
     }
+  };
+
+  const handleChapterSelect = (chapter) => {
+    setSelectedChapter(chapter);
+    setShowChapters(false); // Oculta a tabela de capítulos
+    fetchChapter(selectedBook.abbrev.pt, chapter);
   };
 
   const handleTextSelection = (event) => {
@@ -146,69 +154,77 @@ const Bible = () => {
     }
   };
 
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      fetchExplanation();
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
-      <Navbar onAuthModalToggle={() => console.log('Auth modal toggled')} />
-      <main
-        className="flex-grow p-6 pt-24"
-        onMouseUp={(e) => handleTextSelection(e.nativeEvent)}
-      >
-        <h1 className="text-4xl font-bold mb-6 text-center">Bíblia</h1>
-
-        {/* Seleção de Livro */}
-        <div className="mb-4">
-          <select
-            className="w-full p-3 border border-wood-light rounded-lg"
-            onChange={(e) => {
-              const book = books.find((b) => b.name === e.target.value);
-              handleBookSelect(book);
-            }}
-          >
-            <option value="">Selecione um livro</option>
-            {books.map((book) => (
-              <option key={book.abbrev.pt} value={book.name}>
-                {book.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Seleção de Capítulo */}
-        {chapters.length > 0 && (
-          <div className="mb-4">
+      <Navbar onAuthModalToggle={onAuthModalToggle} />
+      <main className="flex-grow pt-24" onMouseUp={(e) => handleTextSelection(e.nativeEvent)}>
+        {/* Seção superior */}
+        <div className="bg-wood text-cream-light p-4 flex items-center justify-between relative">
+          <div className="flex items-center space-x-4">
             <select
-              className="w-full p-3 border border-wood-light rounded-lg"
-              onChange={(e) => handleChapterSelect(Number(e.target.value))}
+              className="p-2 bg-cream-light text-wood-dark rounded-lg"
+              onChange={(e) => {
+                const book = books.find((b) => b.name === e.target.value);
+                handleBookSelect(book);
+              }}
             >
-              <option value="">Selecione um capítulo</option>
-              {chapters.map((chapter) => (
-                <option key={chapter} value={chapter}>
-                  Capítulo {chapter}
+              <option value="">Selecione um livro</option>
+              {books.map((book) => (
+                <option key={book.abbrev.pt} value={book.name}>
+                  {book.name}
                 </option>
               ))}
             </select>
+            <span className="text-sm">Versão: {currentVersion.toUpperCase()}</span>
           </div>
-        )}
+
+          {/* Tabela de capítulos flutuante */}
+          {showChapters && (
+            <div className="absolute top-full mt-2 bg-white shadow-lg rounded-lg p-4 grid grid-cols-6 gap-2 z-10">
+              {chapters.map((chapter) => (
+                <button
+                  key={chapter}
+                  onClick={() => handleChapterSelect(chapter)}
+                  className="p-2 bg-wood text-cream-light rounded-lg hover:bg-wood-dark"
+                >
+                  {chapter}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Exibição de Versículos */}
         {verses.length > 0 && (
-          <div className="bg-cream p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
-            {verses.map((verse) => (
-              <p key={verse.number} className="text-lg leading-relaxed">
-                <strong>{verse.number}.</strong> {verse.text}
-              </p>
-            ))}
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto mt-4">
+            <h3 className="text-2xl font-serif font-bold mb-4 text-center text-wood-dark">
+              {selectedBook?.name} - Capítulo {selectedChapter}
+            </h3>
+            <div className="space-y-4 text-wood-dark leading-relaxed">
+              {verses.map((verse) => (
+                <p key={verse.number}>
+                  <strong>{verse.number}</strong> {verse.text}
+                </p>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Retângulo Flutuante */}
+        {/* Mini Box Flutuante */}
         {isBoxVisible && (
           <div
             className="absolute bg-white shadow-lg rounded-lg p-4 border border-wood-light"
             style={{
               top: boxPosition.y,
               left: boxPosition.x,
-              width: '500px', // Aumentado o comprimento
+              width: '500px',
               minHeight: '100px',
             }}
             onMouseDown={(e) => e.stopPropagation()} // Evita que o clique feche o retângulo
@@ -222,6 +238,7 @@ const Bible = () => {
               placeholder="Digite sua pergunta sobre o texto selecionado..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleInputKeyDown} // Envia ao pressionar Enter
               disabled={isLoading}
             />
             <Button

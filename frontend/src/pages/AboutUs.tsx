@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -6,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-const AboutUs = () => {
+const AboutUs = ({ onAuthModalToggle }) => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <Navbar onAuthModalToggle={onAuthModalToggle} />
       
       {/* Hero Section */}
       <section className="pt-24 pb-16 md:pt-32 md:pb-20 bg-gradient-to-b from-cream to-cream-light">
