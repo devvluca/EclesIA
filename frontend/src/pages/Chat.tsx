@@ -10,6 +10,12 @@ import Footer from '@/components/Footer';
 
 import { v4 as uuidv4 } from 'uuid';
 
+const suggestedQuestions = [
+  "O que é a IECB?",
+  "Quais os sacramentos da Igreja Episcopal?",
+  "O que é o batismo na IECB?",
+];
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -170,6 +176,21 @@ const Chat = () => {
                 <span className="animate-pulse delay-200">●</span>
               </div>
             )}
+          </div>
+
+          <div className="p-4 bg-cream-light">
+            <p className="text-sm text-wood-dark mb-2">Sugestões de perguntas:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedQuestions.map((question, index) => (
+                <button
+                  key={index}
+                  onClick={() => setInput(question)}
+                  className="px-3 py-1 bg-wood-light text-wood-dark rounded-lg text-sm hover:bg-wood-dark hover:text-cream-light"
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
           </div>
 
           <form onSubmit={handleSendMessage} className="border-t border-wood/10 p-4 bg-cream-light">
