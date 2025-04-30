@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
-const Navbar = () => {
+interface NavbarProps {
+  onAuthModalToggle: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -28,6 +32,14 @@ const Navbar = () => {
           <Link to="/chat">
             <Button className="bg-wood hover:bg-wood-dark text-cream-light">Iniciar conversa</Button>
           </Link>
+          <Link to="/bible">
+            <Button className="bg-cream-light text-wood hover:bg-cream hover:text-wood-dark">
+              Bíblia
+            </Button>
+          </Link>
+          <Button onClick={onAuthModalToggle} className="bg-cream-light text-wood hover:bg-cream hover:text-wood-dark">
+            Login / Cadastro
+          </Button>
         </div>
 
         <div className="md:hidden">
@@ -45,6 +57,9 @@ const Navbar = () => {
             <Link to="/chat" onClick={toggleMenu}>
               <Button className="bg-wood hover:bg-wood-dark text-cream-light w-full">Iniciar conversa</Button>
             </Link>
+            <Button onClick={onAuthModalToggle} className="bg-cream-light text-wood hover:bg-cream hover:text-wood-dark w-full">
+              Login / Cadastro
+            </Button>
           </div>
         </div>
       )}

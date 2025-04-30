@@ -30,65 +30,70 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  async function generateResponse(message: string) {
+  async function generateResponse(message: string, conversationHistory: Message[]) {
     try {
-        const response = await fetch(import.meta.env.VITE_DIFY_API_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${import.meta.env.VITE_DIFY_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: message,
-                inputs: {},
-                response_mode: 'streaming',
-                user: 'unique-user-id',
-                conversation_id: '',
-            }),
-        });
+      const fullContext = conversationHistory
+        .map(msg => `${msg.role === 'user' ? 'Usuário' : 'Assistente'}: ${msg.content}`)
+        .join('\n') + `\nUsuário: ${message}`;
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Dify API Error:', errorData);
-            throw new Error(`API Error: ${response.status}`);
-        }
+      const response = await fetch(import.meta.env.VITE_DIFY_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_DIFY_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: fullContext, // Inclui o histórico completo no campo query
+          inputs: {},
+          response_mode: 'streaming',
+          user: 'unique-user-id',
+          conversation_id: '',
+        }),
+      });
 
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let result = '';
-        let finalAnswer = '';
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Dify API Error:', errorData);
+        throw new Error(`API Error: ${response.status}`);
+      }
 
-        if (reader) {
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let result = '';
+      let finalAnswer = '';
 
-                result += decoder.decode(value, { stream: true });
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-                const lines = result.split('\n');
-                result = lines.pop() || ''; // Mantém o último pedaço incompleto para a próxima iteração
-                for (const line of lines) {
-                    if (line.startsWith('data:')) {
-                        const jsonString = line.replace('data: ', '').trim();
-                        if (jsonString && jsonString !== '[DONE]') {
-                            try {
-                                const parsed = JSON.parse(jsonString);
-                                if (parsed.answer) {
-                                    finalAnswer += parsed.answer; // Concatena diretamente o texto retornado pela API
-                                }
-                            } catch (err) {
-                                console.error('Error parsing streaming chunk:', err);
-                            }
-                        }
-                    }
+          result += decoder.decode(value, { stream: true });
+
+          const lines = result.split('\n');
+          result = lines.pop() || ''; // Mantém o último pedaço incompleto para a próxima iteração
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const jsonString = line.replace('data: ', '').trim();
+              if (jsonString && jsonString !== '[DONE]') {
+                try {
+                  const parsed = JSON.parse(jsonString);
+                  if (parsed.answer) {
+                    const plainText = parsed.answer.replace(/[*_~`>#-]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
+                    finalAnswer += plainText;
+                  }
+                } catch (err) {
+                  console.error('Error parsing streaming chunk:', err);
                 }
+              }
             }
+          }
         }
+      }
 
-        return finalAnswer || 'Erro ao processar a resposta.';
+      return finalAnswer || 'Erro ao processar a resposta.';
     } catch (error) {
-        console.error('Error calling Dify API:', error);
-        throw error;
+      console.error('Error calling Dify API:', error);
+      throw error;
     }
   }
 
@@ -117,7 +122,7 @@ const Chat = () => {
     setMessages(prev => [...prev, aiMessage]);
 
     try {
-      const aiResponseContent = await generateResponse(input);
+      const aiResponseContent = await generateResponse(input, [...messages, userMessage]);
 
       setMessages(prev => {
         const updatedMessages = [...prev];
@@ -151,7 +156,7 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
-      <Navbar />
+      <Navbar onAuthModalToggle={() => console.log('Auth modal toggled')} />
 
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-4xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-200px)] flex flex-col">
