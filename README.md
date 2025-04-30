@@ -25,7 +25,7 @@ Criar uma ferramenta acessível e acolhedora que auxilie fiéis, curiosos e memb
 ## 🛠️ Tecnologias Utilizadas
 
 - **Frontend:** Next.js e Tailwind CSS
-- **Backend:** Python (Flask)
+- **Backend:** Python (Fast API)
 - **Banco de Dados:** PostgreSQL
 - **Integração IA:** Dify
 - **Hospedagem:** Vercel & Supabase
