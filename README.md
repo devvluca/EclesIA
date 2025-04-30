@@ -26,9 +26,9 @@ Criar uma ferramenta acessível e acolhedora que auxilie fiéis, curiosos e memb
 
 - **Frontend:** Next.js e Tailwind CSS
 - **Backend:** Python (Flask)
-- **Banco de Dados:** SQLite
-- **Integração IA:** Gemini
-- **Hospedagem:** Firebase Hosting
+- **Banco de Dados:** PostgreSQL
+- **Integração IA:** Dify
+- **Hospedagem:** Vercel & Supabase
 
 ---
 
