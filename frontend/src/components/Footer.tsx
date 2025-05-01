@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -13,6 +12,7 @@ const Footer = () => {
                 src="/img/episcopal_logo.png"  
                 alt="EclesIA Logo" 
                 className="h-10 w-10" 
+                onError={(e) => (e.currentTarget.src = '/fallback-logo.png')} // Adicione um fallback
               />
               <h3 className="text-cream-light text-xl font-serif">EclesIA</h3>
             </div>
@@ -31,6 +31,9 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/chat" className="text-cream/80 hover:text-cream transition-colors">Conversar com a IA</Link>
+              </li>
+              <li>
+                <Link to="/bible" className="text-cream/80 hover:text-cream transition-colors">Bíblia</Link>
               </li>
             </ul>
           </div>

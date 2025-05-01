@@ -3,23 +3,22 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const Bible = ({ onAuthModalToggle }) => {
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [chapters, setChapters] = useState([]);
-  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [selectedChapter, setSelectedChapter] = useState(1); // Predefinido para o capítulo 1
   const [verses, setVerses] = useState([]);
-  const [selectedText, setSelectedText] = useState('');
-  const [input, setInput] = useState('');
-  const [response, setResponse] = useState('');
-  const [conversationHistory, setConversationHistory] = useState([]);
-  const [isBoxVisible, setIsBoxVisible] = useState(false);
-  const [boxPosition, setBoxPosition] = useState({ x: 0, y: 0 });
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState('nvi'); // Versão atual da Bíblia
-  const [showChapters, setShowChapters] = useState(false); // Controle para exibir a tabela de capítulos
+  const [showSelector, setShowSelector] = useState(false); // Controle para exibir o seletor de livros/capítulos
+  const [isSelectingBook, setIsSelectingBook] = useState(true); // Controle para alternar entre livros e capítulos
+  const [selectedText, setSelectedText] = useState(''); // Texto selecionado pelo usuário
+  const [isBoxVisible, setIsBoxVisible] = useState(false); // Controle para exibir a mini box flutuante
+  const [boxPosition, setBoxPosition] = useState({ x: 0, y: 0 }); // Posição da mini box
+  const [input, setInput] = useState(''); // Entrada do usuário na mini box
+  const [response, setResponse] = useState(''); // Resposta da IA
+  const [isLoading, setIsLoading] = useState(false); // Controle de carregamento da IA
 
   const API_URL = 'https://www.abibliadigital.com.br/api';
   const API_TOKEN = import.meta.env.VITE_BIBLIA_API_TOKEN; // Token da API
@@ -33,6 +32,14 @@ const Bible = ({ onAuthModalToggle }) => {
           },
         });
         setBooks(response.data);
+
+        // Predefine Gênesis 1:1 ao carregar a página
+        const genesis = response.data.find((book) => book.abbrev.pt === 'gn');
+        if (genesis) {
+          setSelectedBook(genesis);
+          setChapters(Array.from({ length: genesis.chapters }, (_, i) => i + 1));
+          fetchChapter(genesis.abbrev.pt, 1);
+        }
       } catch (error) {
         console.error('Erro ao carregar os livros:', error);
       }
@@ -41,17 +48,9 @@ const Bible = ({ onAuthModalToggle }) => {
     fetchBooks();
   }, []);
 
-  const handleBookSelect = (book) => {
-    setSelectedBook(book);
-    setChapters(Array.from({ length: book.chapters }, (_, i) => i + 1));
-    setSelectedChapter(null);
-    setVerses([]);
-    setShowChapters(true); // Exibe a tabela de capítulos
-  };
-
   const fetchChapter = async (bookAbbrev, chapter) => {
     try {
-      const response = await axios.get(`${API_URL}/verses/${currentVersion}/${bookAbbrev}/${chapter}`, {
+      const response = await axios.get(`${API_URL}/verses/nvi/${bookAbbrev}/${chapter}`, {
         headers: {
           Authorization: `Bearer ${API_TOKEN}`,
         },
@@ -62,10 +61,26 @@ const Bible = ({ onAuthModalToggle }) => {
     }
   };
 
+  const handleBookSelect = (book) => {
+    setSelectedBook(book);
+    setChapters(Array.from({ length: book.chapters }, (_, i) => i + 1));
+    setIsSelectingBook(false); // Alterna para a seleção de capítulos
+  };
+
   const handleChapterSelect = (chapter) => {
     setSelectedChapter(chapter);
-    setShowChapters(false); // Oculta a tabela de capítulos
+    setShowSelector(false); // Fecha o seletor
     fetchChapter(selectedBook.abbrev.pt, chapter);
+  };
+
+  const handleChapterChange = (direction) => {
+    if (!selectedBook || !selectedChapter) return;
+
+    const newChapter = selectedChapter + direction;
+    if (newChapter > 0 && newChapter <= selectedBook.chapters) {
+      setSelectedChapter(newChapter);
+      fetchChapter(selectedBook.abbrev.pt, newChapter);
+    }
   };
 
   const handleTextSelection = (event) => {
@@ -75,7 +90,6 @@ const Bible = ({ onAuthModalToggle }) => {
       setIsBoxVisible(true);
       setBoxPosition({ x: event.pageX, y: event.pageY });
       setResponse('');
-      setConversationHistory([]); // Reset conversation history for new selection
     }
   };
 
@@ -93,7 +107,7 @@ const Bible = ({ onAuthModalToggle }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: `Texto selecionado: "${selectedText}". Pergunta: "${input}"`,
+          query: `O texto selecionado é um versículo da Bíblia: "${selectedText}". Pergunta: "${input}"`,
           inputs: {},
           response_mode: 'streaming',
           user: 'unique-user-id',
@@ -140,12 +154,6 @@ const Bible = ({ onAuthModalToggle }) => {
           }
         }
       }
-
-      // Adiciona a pergunta e resposta ao histórico de conversas
-      setConversationHistory((prev) => [
-        ...prev,
-        { question: input, answer: finalAnswer || 'Erro ao processar a resposta.' },
-      ]);
     } catch (error) {
       console.error('Erro ao obter explicação:', error);
       setResponse('Erro ao obter explicação.');
@@ -162,51 +170,100 @@ const Bible = ({ onAuthModalToggle }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream-light">
+    <div className="flex flex-col min-h-screen bg-cream-light" onMouseUp={(e) => handleTextSelection(e.nativeEvent)}>
       <Navbar onAuthModalToggle={onAuthModalToggle} />
-      <main className="flex-grow pt-24" onMouseUp={(e) => handleTextSelection(e.nativeEvent)}>
-        {/* Seção superior */}
-        <div className="bg-wood text-cream-light p-4 flex items-center justify-between relative">
-          <div className="flex items-center space-x-4">
-            <select
-              className="p-2 bg-cream-light text-wood-dark rounded-lg"
-              onChange={(e) => {
-                const book = books.find((b) => b.name === e.target.value);
-                handleBookSelect(book);
+      <main className="flex-grow pt-[calc(4rem+4px)]">
+        {/* Seletor de livros, capítulos e navegação */}
+        <div className="bg-wood text-cream-light p-4 flex items-center justify-center relative">
+          <div className="absolute left-4">
+            <button
+              onClick={() => {
+                setShowSelector(!showSelector);
+                setIsSelectingBook(true); // Começa com a seleção de livros
               }}
+              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light"
             >
-              <option value="">Selecione um livro</option>
-              {books.map((book) => (
-                <option key={book.abbrev.pt} value={book.name}>
-                  {book.name}
-                </option>
-              ))}
-            </select>
-            <span className="text-sm">Versão: {currentVersion.toUpperCase()}</span>
+              {selectedBook ? selectedBook.name : 'Selecione um livro'}
+            </button>
+            {showSelector && (
+              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-[28rem]">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-center text-wood-dark font-bold">
+                    {isSelectingBook ? 'Selecione um Livro' : 'Selecione um Capítulo'}
+                  </h3>
+                  <button
+                    onClick={() => setShowSelector(false)}
+                    className="text-wood-dark hover:text-wood-darkest"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div
+                  className={`grid ${
+                    isSelectingBook ? 'grid-cols-3' : 'grid-cols-6'
+                  } gap-3`}
+                >
+                  {isSelectingBook
+                    ? books.map((book) => (
+                        <button
+                          key={book.abbrev.pt}
+                          onClick={() => handleBookSelect(book)}
+                          className="p-3 bg-wood text-cream-light rounded-lg hover:bg-wood-dark text-sm text-center truncate"
+                          style={{ minHeight: '3rem' }}
+                        >
+                          {book.name}
+                        </button>
+                      ))
+                    : chapters.map((chapter) => (
+                        <button
+                          key={chapter}
+                          onClick={() => handleChapterSelect(chapter)}
+                          className={`p-3 rounded-lg text-sm text-center ${
+                            chapter === selectedChapter
+                              ? 'bg-wood-dark text-cream-light'
+                              : 'bg-wood text-cream-light hover:bg-wood-dark'
+                          }`}
+                          style={{ minHeight: '3rem' }}
+                        >
+                          {chapter}
+                        </button>
+                      ))}
+                </div>
+                <Button
+                  onClick={() => setShowSelector(false)}
+                  className="mt-4 bg-wood text-cream-light hover:bg-wood-dark w-full"
+                >
+                  Fechar
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* Tabela de capítulos flutuante */}
-          {showChapters && (
-            <div className="absolute top-full mt-2 bg-white shadow-lg rounded-lg p-4 grid grid-cols-6 gap-2 z-10">
-              {chapters.map((chapter) => (
-                <button
-                  key={chapter}
-                  onClick={() => handleChapterSelect(chapter)}
-                  className="p-2 bg-wood text-cream-light rounded-lg hover:bg-wood-dark"
-                >
-                  {chapter}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="flex items-center space-x-4">
+            <Button
+              onClick={() => handleChapterChange(-1)}
+              disabled={selectedChapter === 1}
+              className="bg-wood text-cream-light hover:bg-wood-dark"
+            >
+              <ChevronLeft />
+            </Button>
+            <h2 className="text-xl font-bold text-cream-light">
+              {selectedBook?.name} - Capítulo {selectedChapter}
+            </h2>
+            <Button
+              onClick={() => handleChapterChange(1)}
+              disabled={selectedChapter === selectedBook?.chapters}
+              className="bg-wood text-cream-light hover:bg-wood-dark"
+            >
+              <ChevronRight />
+            </Button>
+          </div>
+          <span className="absolute right-4 text-sm text-cream-light">Versão: NVI</span>
         </div>
 
         {/* Exibição de Versículos */}
         {verses.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto mt-4">
-            <h3 className="text-2xl font-serif font-bold mb-4 text-center text-wood-dark">
-              {selectedBook?.name} - Capítulo {selectedChapter}
-            </h3>
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto mt-4 mb-16">
             <div className="space-y-4 text-wood-dark leading-relaxed">
               {verses.map((verse) => (
                 <p key={verse.number}>
@@ -224,21 +281,28 @@ const Bible = ({ onAuthModalToggle }) => {
             style={{
               top: boxPosition.y,
               left: boxPosition.x,
-              width: '500px',
-              minHeight: '100px',
+              width: '400px',
+              minHeight: '150px',
             }}
-            onMouseDown={(e) => e.stopPropagation()} // Evita que o clique feche o retângulo
           >
-            <p className="text-sm text-wood-dark mb-2">
-              <strong>Texto selecionado:</strong> {selectedText}
-            </p>
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm text-wood-dark">
+                <strong>Texto selecionado:</strong> {selectedText}
+              </p>
+              <button
+                onClick={() => setIsBoxVisible(false)}
+                className="text-wood-dark hover:text-wood-darkest"
+              >
+                <X size={16} />
+              </button>
+            </div>
             <textarea
               className="w-full p-2 border border-wood-light rounded-lg resize-none"
               rows={2}
               placeholder="Digite sua pergunta sobre o texto selecionado..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleInputKeyDown} // Envia ao pressionar Enter
+              onKeyDown={handleInputKeyDown}
               disabled={isLoading}
             />
             <Button
@@ -251,20 +315,6 @@ const Bible = ({ onAuthModalToggle }) => {
             {response && (
               <div className="mt-4 p-2 bg-cream-light border border-wood-light rounded-lg">
                 {response}
-              </div>
-            )}
-            {conversationHistory.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-sm font-bold text-wood-dark mb-2">Histórico:</h3>
-                <ul className="text-sm text-wood-dark space-y-2">
-                  {conversationHistory.map((entry, index) => (
-                    <li key={index}>
-                      <strong>Pergunta:</strong> {entry.question}
-                      <br />
-                      <strong>Resposta:</strong> {entry.answer}
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
+import { Send, Square } from 'lucide-react'; // Import Square icon
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 
@@ -10,10 +10,27 @@ import Footer from '@/components/Footer';
 
 import { v4 as uuidv4 } from 'uuid';
 
-const suggestedQuestions = [
+const allSuggestedQuestions = [
   "O que é a IECB?",
   "Quais os sacramentos da Igreja Episcopal?",
   "O que é o batismo na IECB?",
+  "Qual a história da Igreja Anglicana?",
+  "O que significa ser um cristão anglicano?",
+  "Como funciona a liturgia na IECB?",
+  "Quais são os princípios da tradição Anglicana?",
+  "O que é a Eucaristia?",
+  "Como posso participar da IECB?",
+  "Qual é o papel da Bíblia na vida cristã?",
+  "O que Jesus ensinou sobre o amor ao próximo?",
+  "Como posso me conectar mais com Deus?",
+  "O que significa ter fé em tempos difíceis?",
+  "Quais são os livros mais importantes da Bíblia?",
+  "Como os jovens podem se envolver mais na igreja?",
+  "O que é o Espírito Santo?",
+  "Por que a oração é importante?",
+  "Como a Bíblia pode me ajudar no dia a dia?",
+  "O que significa ser salvo?",
+  "Qual é o propósito da vida segundo a Bíblia?",
 ];
 
 const Chat = ({ onAuthModalToggle }) => {
@@ -27,8 +44,15 @@ const Chat = ({ onAuthModalToggle }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setSuggestedQuestions(shuffleArray(allSuggestedQuestions).slice(0, 3));
+  }, []);
+
+  const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
   async function generateResponse(message: string, conversationHistory: Message[]) {
     try {
@@ -79,10 +103,21 @@ const Chat = ({ onAuthModalToggle }) => {
                   const parsed = JSON.parse(jsonString);
                   if (parsed.answer) {
                     const plainText = parsed.answer.replace(/[*_~`>#-]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
-                    finalAnswer += plainText;
+                    for (const char of plainText) {
+                      finalAnswer += char;
+                      setMessages((prev) => {
+                        const updatedMessages = [...prev];
+                        const lastMessage = updatedMessages[updatedMessages.length - 1];
+                        if (lastMessage.role === 'assistant') {
+                          lastMessage.content += char;
+                        }
+                        return updatedMessages;
+                      });
+                      await new Promise((resolve) => setTimeout(resolve, 10)); // Velocidade rápida
+                    }
                   }
                 } catch (err) {
-                  console.error('Error parsing streaming chunk:', err);
+                  console.error('Erro ao processar chunk de streaming:', err);
                 }
               }
             }
@@ -92,7 +127,7 @@ const Chat = ({ onAuthModalToggle }) => {
 
       return finalAnswer || 'Erro ao processar a resposta.';
     } catch (error) {
-      console.error('Error calling Dify API:', error);
+      console.error('Erro ao chamar a API Dify:', error);
       throw error;
     }
   }
@@ -157,9 +192,8 @@ const Chat = ({ onAuthModalToggle }) => {
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
-
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
-        <div className="max-w-4xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-200px)] flex flex-col">
+        <div className="max-w-6xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-150px)] flex flex-col">
           <div className="bg-wood p-4 text-cream-light flex items-center">
             <img src="/img/episcopal_logo.png" alt="EclesIA Logo" className="h-8 mr-3" />
             <div>
@@ -173,14 +207,6 @@ const Chat = ({ onAuthModalToggle }) => {
               <ChatMessage key={message.id} message={message} />
             ))}
             <div ref={messagesEndRef} />
-
-            {isLoading && (
-              <div className="flex items-center space-x-2 text-wood-dark/60 pl-12">
-                <span className="animate-pulse">●</span>
-                <span className="animate-pulse delay-100">●</span>
-                <span className="animate-pulse delay-200">●</span>
-              </div>
-            )}
           </div>
 
           <div className="p-4 bg-cream-light">
@@ -212,13 +238,12 @@ const Chat = ({ onAuthModalToggle }) => {
                 className="bg-wood hover:bg-wood-dark text-cream-light"
                 disabled={isLoading || !input.trim()}
               >
-                <Send size={18} />
+                {isLoading ? <Square size={18} /> : <Send size={18} />}
               </Button>
             </div>
           </form>
         </div>
       </main>
-
       <Footer />
     </div>
   );

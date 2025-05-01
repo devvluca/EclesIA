@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react'; // Importado o ícone de pessoa
 
 interface NavbarProps {
   onAuthModalToggle: () => void;
@@ -37,9 +37,12 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
               Bíblia
             </Button>
           </Link>
-          <Button onClick={onAuthModalToggle} className="bg-cream-light text-wood hover:bg-cream hover:text-wood-dark">
-            Login / Cadastro
-          </Button>
+          <button
+            onClick={onAuthModalToggle}
+            className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300"
+          >
+            <User size={20} />
+          </button>
         </div>
 
         <div className="md:hidden">
@@ -57,9 +60,15 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
             <Link to="/chat" onClick={toggleMenu}>
               <Button className="bg-wood hover:bg-wood-dark text-cream-light w-full">Iniciar conversa</Button>
             </Link>
-            <Button onClick={onAuthModalToggle} className="bg-cream-light text-wood hover:bg-cream hover:text-wood-dark w-full">
-              Login / Cadastro
-            </Button>
+            <Link to="/bible" className="text-cream-light hover:text-cream px-4 py-2 rounded-md" onClick={toggleMenu}>
+              Bíblia
+            </Link>
+            <button
+              onClick={onAuthModalToggle}
+              className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300 w-full"
+            >
+              <User size={20} />
+            </button>
           </div>
         </div>
       )}

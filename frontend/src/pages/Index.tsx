@@ -43,7 +43,7 @@ const Index = ({ onAuthModalToggle }) => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features and CTA Section */}
       <section className="py-16 bg-gradient-to-b from-cream to-cream-light">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -64,7 +64,7 @@ const Index = ({ onAuthModalToggle }) => {
                 Conheça mais sobre a Igreja Episcopal Carismática, sua história, missão e valores que guiam nossa fé.
               </p>
               <Link to="/sobre">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark">Saiba Mais</Button>
+                <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Saiba Mais</Button>
               </Link>
             </div>
 
@@ -76,7 +76,7 @@ const Index = ({ onAuthModalToggle }) => {
                 Converse com nossa inteligência artificial para tirar dúvidas e aprender mais sobre a tradição Anglicana.
               </p>
               <Link to="/chat">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark">Converse Agora</Button>
+                <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Converse Agora</Button>
               </Link>
             </div>
 
@@ -85,36 +85,33 @@ const Index = ({ onAuthModalToggle }) => {
               <BookOpen className="w-12 h-12 text-wood-dark mx-auto mb-4" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Bíblia Interativa</h3>
               <p className="text-wood-darkest/70 mb-4">
-                Explore a Bíblia de forma interativa, selecione capítulos e receba explicações sobre os textos.
+                Explore a Bíblia de forma interativa, selecione capítulos e receba explicações sobre os textos em tempo real.
               </p>
               <Link to="/bible">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark">Acessar Bíblia</Button>
+                <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Acessar Bíblia</Button>
               </Link>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-[#f5e8dc]">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl text-wood-dark font-bold mb-6 font-serif">
-            Pronto para explorar sua espiritualidade?
-          </h2>
-          <p className="text-wood-dark/75 max-w-2xl mx-auto mb-8">
-            Inicie uma conversa com nossa IA ou explore a Bíblia interativa para aprofundar seu conhecimento e sua fé.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link to="/chat">
-              <Button className="bg-wood text-cream-light hover:bg-wood-dark transition-all duration-300">
-                Iniciar Conversa
-              </Button>
-            </Link>
-            <Link to="/bible">
-              <Button className="bg-wood text-cream-light hover:bg-wood-dark transition-all duration-300">
-                Acessar Bíblia
-              </Button>
-            </Link>
+          <div className="text-center mt-20 mb-10 max-w-4xl mx-auto"> {/* Ajustado o espaçamento e largura */}
+            <h2 className="text-3xl text-wood-dark font-bold mb-6 font-serif">
+              Pronto para explorar sua espiritualidade?
+            </h2>
+            <p className="text-wood-dark/75 max-w-2xl mx-auto mb-8">
+              Inicie uma conversa com nossa IA ou explore a Bíblia interativa para aprofundar seu conhecimento e sua fé.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+              <Link to="/chat">
+                <Button className="bg-wood text-cream-light hover:bg-wood-dark transition-all duration-300 w-full sm:w-auto px-8">
+                  Iniciar Conversa
+                </Button>
+              </Link>
+              <Link to="/bible">
+                <Button className="bg-wood text-cream-light hover:bg-wood-dark transition-all duration-300 w-full sm:w-auto px-8">
+                  Acessar Bíblia
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
