@@ -197,21 +197,21 @@ const Bible = ({ onAuthModalToggle }) => {
       <Navbar onAuthModalToggle={onAuthModalToggle} />
       <main className="flex-grow pt-[calc(4rem+4px)]">
         {/* Seletor de livros, capítulos e navegação */}
-        <div className="bg-wood text-cream-light p-4 flex items-center justify-center relative">
+        <div className="bg-wood text-cream-light p-4 flex flex-wrap items-center justify-center relative"> {/* Adicionado flex-wrap para melhor responsividade */}
           <div className="absolute left-4">
             <button
               onClick={() => {
                 setShowSelector(!showSelector);
                 setIsSelectingBook(true); // Começa com a seleção de livros
               }}
-              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light"
+              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-sm sm:text-base" // Ajustado para texto menor em telas pequenas
             >
               {selectedBook ? selectedBook.name : 'Selecione um livro'}
             </button>
             {showSelector && (
-              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-[28rem]">
+              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-full sm:w-[28rem]"> {/* Responsivo para largura total em mobile */}
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-center text-wood-dark font-bold">
+                  <h3 className="text-center text-wood-dark font-bold text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
                     {isSelectingBook ? 'Selecione um Livro' : 'Selecione um Capítulo'}
                   </h3>
                   <button
@@ -223,15 +223,15 @@ const Bible = ({ onAuthModalToggle }) => {
                 </div>
                 <div
                   className={`grid ${
-                    isSelectingBook ? 'grid-cols-3' : 'grid-cols-6'
-                  } gap-3`}
+                    isSelectingBook ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-4 sm:grid-cols-6'
+                  } gap-3`} // Ajustado para menos colunas em telas pequenas
                 >
                   {isSelectingBook
                     ? books.map((book) => (
                         <button
                           key={book.abbrev.pt}
                           onClick={() => handleBookSelect(book)}
-                          className="p-3 bg-wood text-cream-light rounded-lg hover:bg-wood-dark text-sm text-center truncate"
+                          className="p-3 bg-wood text-cream-light rounded-lg hover:bg-wood-dark text-xs sm:text-sm text-center truncate" // Texto menor em telas pequenas
                           style={{ minHeight: '3rem' }}
                         >
                           {book.name}
@@ -241,7 +241,7 @@ const Bible = ({ onAuthModalToggle }) => {
                         <button
                           key={chapter}
                           onClick={() => handleChapterSelect(chapter)}
-                          className={`p-3 rounded-lg text-sm text-center ${
+                          className={`p-3 rounded-lg text-xs sm:text-sm text-center ${
                             chapter === selectedChapter
                               ? 'bg-wood-dark text-cream-light'
                               : 'bg-wood text-cream-light hover:bg-wood-dark'
@@ -262,7 +262,7 @@ const Bible = ({ onAuthModalToggle }) => {
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-center space-x-4"> {/* Ajusta para setas nas laterais */}
             <Button
               onClick={() => handleChapterChange(-1)}
               disabled={selectedChapter === 1}
@@ -270,7 +270,7 @@ const Bible = ({ onAuthModalToggle }) => {
             >
               <ChevronLeft />
             </Button>
-            <h2 className="text-xl font-bold text-cream-light">
+            <h2 className="text-base sm:text-xl font-bold text-cream-light text-center">
               {selectedBook?.name} - Capítulo {selectedChapter}
             </h2>
             <Button
@@ -281,11 +281,11 @@ const Bible = ({ onAuthModalToggle }) => {
               <ChevronRight />
             </Button>
           </div>
-          <div className="absolute right-4 flex items-center space-x-4">
-            <span className="text-sm text-cream-light">Versão: NVI</span>
+          <div className="absolute right-4 flex items-center space-x-4 hidden sm:flex"> {/* Esconde "Versão: NVI" no mobile */}
+            <span className="text-xs sm:text-sm text-cream-light">Versão: NVI</span>
             <button
               onClick={() => setIsHistoryVisible(!isHistoryVisible)}
-              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light"
+              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-xs sm:text-sm" // Texto menor em telas pequenas
             >
               Histórico
             </button>
@@ -323,8 +323,8 @@ const Bible = ({ onAuthModalToggle }) => {
 
         {/* Exibição de Versículos */}
         {verses.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto mt-4 mb-16">
-            <div className="space-y-4 text-wood-dark leading-relaxed">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 mb-16"> {/* Ajustado para largura total em mobile */}
+            <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
               {verses.map((verse) => (
                 <p key={verse.number}>
                   <strong>{verse.number}</strong> {verse.text}
@@ -341,12 +341,13 @@ const Bible = ({ onAuthModalToggle }) => {
             style={{
               top: boxPosition.y,
               left: boxPosition.x,
-              width: '400px',
+              width: '90%', // Ajustado para largura total em mobile
+              maxWidth: '400px',
               minHeight: '150px',
             }}
           >
             <div className="flex justify-between items-center mb-2">
-              <p className="text-sm text-wood-dark">
+              <p className="text-xs sm:text-sm text-wood-dark"> {/* Texto menor em telas pequenas */}
                 <strong>Texto selecionado:</strong> {selectedText}
               </p>
               <button
@@ -357,7 +358,7 @@ const Bible = ({ onAuthModalToggle }) => {
               </button>
             </div>
             <textarea
-              className="w-full p-2 border border-wood-light rounded-lg resize-none"
+              className="w-full p-2 border border-wood-light rounded-lg resize-none text-xs sm:text-sm" // Texto menor em telas pequenas
               rows={2}
               placeholder="Digite sua pergunta sobre o texto selecionado..."
               value={input}
@@ -373,7 +374,7 @@ const Bible = ({ onAuthModalToggle }) => {
               Enviar
             </Button>
             {response && (
-              <div className="mt-4 p-2 bg-cream-light border border-wood-light rounded-lg">
+              <div className="mt-4 p-2 bg-cream-light border border-wood-light rounded-lg text-xs sm:text-sm"> {/* Texto menor em telas pequenas */}
                 {response}
               </div>
             )}
