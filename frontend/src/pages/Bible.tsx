@@ -19,6 +19,8 @@ const Bible = ({ onAuthModalToggle }) => {
   const [input, setInput] = useState(''); // Entrada do usuário na mini box
   const [response, setResponse] = useState(''); // Resposta da IA
   const [isLoading, setIsLoading] = useState(false); // Controle de carregamento da IA
+  const [history, setHistory] = useState([]); // Histórico de consultas
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false); // Controle para exibir a box de histórico
 
   const API_URL = 'https://www.abibliadigital.com.br/api';
   const API_TOKEN = import.meta.env.VITE_BIBLIA_API_TOKEN; // Token da API
@@ -46,6 +48,19 @@ const Bible = ({ onAuthModalToggle }) => {
     };
 
     fetchBooks();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsBoxVisible(false); // Fecha a box ao pressionar Esc
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const fetchChapter = async (bookAbbrev, chapter) => {
@@ -85,12 +100,18 @@ const Bible = ({ onAuthModalToggle }) => {
 
   const handleTextSelection = (event) => {
     const selection = window.getSelection();
-    if (selection && selection.toString().trim()) {
+    const selectedElement = event.target.closest('.space-y-4.text-wood-dark.leading-relaxed'); // Verifica se o elemento pertence à div específica
+
+    if (selection && selection.toString().trim() && selectedElement) {
       setSelectedText(selection.toString());
       setIsBoxVisible(true);
       setBoxPosition({ x: event.pageX, y: event.pageY });
       setResponse('');
     }
+  };
+
+  const addToHistory = (verse, response) => {
+    setHistory((prev) => [...prev, { verse, response }]);
   };
 
   const fetchExplanation = async () => {
@@ -154,6 +175,8 @@ const Bible = ({ onAuthModalToggle }) => {
           }
         }
       }
+
+      addToHistory(selectedText, finalAnswer); // Adiciona ao histórico
     } catch (error) {
       console.error('Erro ao obter explicação:', error);
       setResponse('Erro ao obter explicação.');
@@ -258,8 +281,45 @@ const Bible = ({ onAuthModalToggle }) => {
               <ChevronRight />
             </Button>
           </div>
-          <span className="absolute right-4 text-sm text-cream-light">Versão: NVI</span>
+          <div className="absolute right-4 flex items-center space-x-4">
+            <span className="text-sm text-cream-light">Versão: NVI</span>
+            <button
+              onClick={() => setIsHistoryVisible(!isHistoryVisible)}
+              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light"
+            >
+              Histórico
+            </button>
+          </div>
         </div>
+
+        {/* Box de Histórico */}
+        {isHistoryVisible && (
+          <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 border border-wood-light max-w-md max-h-96 overflow-y-auto z-20">
+            <h3 className="text-lg font-bold text-wood-dark mb-4">Histórico de Consultas</h3>
+            {history.length > 0 ? (
+              <ul className="space-y-2">
+                {history.map((item, index) => (
+                  <li key={index} className="border-b border-wood-light pb-2">
+                    <p className="text-sm text-wood-dark">
+                      <strong>Versículo:</strong> {item.verse}
+                    </p>
+                    <p className="text-sm text-wood-dark">
+                      <strong>Resposta:</strong> {item.response}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-wood-dark">Nenhuma consulta realizada ainda.</p>
+            )}
+            <Button
+              onClick={() => setIsHistoryVisible(false)}
+              className="mt-4 bg-wood text-cream-light hover:bg-wood-dark w-full"
+            >
+              Fechar
+            </Button>
+          </div>
+        )}
 
         {/* Exibição de Versículos */}
         {verses.length > 0 && (

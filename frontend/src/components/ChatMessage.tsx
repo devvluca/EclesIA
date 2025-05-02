@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -16,6 +15,7 @@ interface ChatMessageProps {
 
 const ChatMessage = ({ message }: ChatMessageProps) => {
   const isUser = message.role === 'user';
+  const timestamp = new Date(message.timestamp); // Certifique-se de que o timestamp é um objeto Date
 
   return (
     <div className={cn("flex w-full mb-4", 
@@ -37,7 +37,7 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
           "text-xs mt-1",
           isUser ? "text-cream/70" : "text-wood-dark/70"
         )}>
-          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
       
