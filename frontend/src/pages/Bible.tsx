@@ -268,24 +268,28 @@ const Bible = ({ onAuthModalToggle }) => {
             </div>
           )}
 
-          <div className="flex items-center justify-center space-x-4"> {/* Ajusta para setas nas laterais */}
-            <Button
-              onClick={() => handleChapterChange(-1)}
-              disabled={selectedChapter === 1}
-              className="bg-wood text-cream-light hover:bg-wood-dark"
+          <div className="flex items-center justify-center space-x-4"> {/* Adicionado items-center para alinhamento vertical */}
+            <button
+              type="button"
+              onClick={() => handleChapterChange(-1)} // Retrocede capítulos
+              disabled={!selectedBook || selectedChapter <= 1} // Desabilita apenas no primeiro capítulo
+              className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 w-10 bg-wood text-cream-light hover:bg-wood-dark"
+              style={{ padding: '0.5rem' }} // Ajustado padding para manter a área clicável sem deslocar o botão
             >
               <ChevronLeft />
-            </Button>
+            </button>
             <h2 className="text-base sm:text-xl font-bold text-cream-light text-center">
               {selectedBook?.name} - Capítulo {selectedChapter}
             </h2>
-            <Button
-              onClick={() => handleChapterChange(1)}
-              disabled={selectedChapter === selectedBook?.chapters}
-              className="bg-wood text-cream-light hover:bg-wood-dark"
+            <button
+              type="button"
+              onClick={() => handleChapterChange(1)} // Avança capítulos
+              disabled={!selectedBook || selectedChapter >= selectedBook?.chapters} // Desabilita apenas no último capítulo
+              className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 w-10 bg-wood text-cream-light hover:bg-wood-dark"
+              style={{ padding: '0.5rem' }} // Ajustado padding para manter a área clicável sem deslocar o botão
             >
               <ChevronRight />
-            </Button>
+            </button>
           </div>
           <div className="absolute right-4 flex items-center space-x-4 hidden sm:flex"> {/* Esconde "Versão: NVI" no mobile */}
             <span className="text-xs sm:text-sm text-cream-light">Versão: NVI</span>
