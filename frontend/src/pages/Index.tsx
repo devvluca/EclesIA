@@ -27,7 +27,7 @@ const Index = ({ onAuthModalToggle }) => {
               Conversas Sagradas <br /> com <span className="text-cream-light">EclesIA</span>
             </h1>
             <p className="text-lg md:text-xl text-cream-light mb-8 max-w-lg">
-              Tire suas dúvidas sobre a Igreja Episcopal Carismática do Brasil e a tradição Anglicana com nossa IA especializada.
+              Tire suas dúvidas sobre a Igreja Episcopal Carismática do Brasil e interaja com a Bíblia com nossa IA especializada.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Link to="/chat">
@@ -73,7 +73,7 @@ const Index = ({ onAuthModalToggle }) => {
               <MessageCircle className="w-12 h-12 text-wood-dark mx-auto mb-4" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Chatbot IA</h3>
               <p className="text-wood-darkest/70 mb-4">
-                Converse com nossa inteligência artificial para tirar dúvidas e aprender mais sobre a tradição Anglicana.
+                Converse com nossa inteligência artificial para tirar dúvidas e aprender mais sobre a nossa igreja e tradições.
               </p>
               <Link to="/chat">
                 <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Converse Agora</Button>

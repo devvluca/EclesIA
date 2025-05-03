@@ -23,7 +23,7 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
       
       {!isUser && (
         <Avatar className="h-8 w-8 mr-2">
-          <AvatarImage src="/public/lovable-uploads/79404d9f-b067-4c31-96af-d8651754b8b9.png" />
+          <AvatarImage src="/img/episcopal_logo.png" />
           <AvatarFallback className="bg-wood-dark text-cream">IA</AvatarFallback>
         </Avatar>
       )}

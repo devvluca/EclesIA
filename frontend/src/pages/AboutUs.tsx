@@ -50,74 +50,72 @@ const AboutUs = ({ onAuthModalToggle }) => {
         </div>
       </section>
       
-      {/* FAQ Section */}
-      <section className="py-16 bg-cream-light">
+      {/* FAQ and CTA Section */}
+      <section className="py-16 bg-white text-wood-dark">
         <div className="container mx-auto px-4">
+          {/* Perguntas Frequentes */}
           <h2 className="text-3xl font-bold mb-10 text-center font-serif">Perguntas Frequentes</h2>
-          
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto mb-16">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1" className="border-wood/20">
-                <AccordionTrigger className="text-wood-dark hover:text-wood font-medium">
+                <AccordionTrigger className="hover:text-wood font-medium">
                   O que é a tradição Anglicana?
                 </AccordionTrigger>
-                <AccordionContent className="text-wood-darkest/70">
+                <AccordionContent className="text-wood-dark/70">
                   A tradição Anglicana surgiu no século XVI durante a Reforma Inglesa. É conhecida como uma "via média" que combina elementos católicos e protestantes, mantendo um equilíbrio entre Escritura, Tradição e Razão. Valoriza a liturgia histórica, os sacramentos e a sucessão apostólica, mas com abertura para reformas e contextualização.
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="item-2" className="border-wood/20">
-                <AccordionTrigger className="text-wood-dark hover:text-wood font-medium">
+                <AccordionTrigger className="hover:text-wood font-medium">
                   O que significa ser uma igreja "carismática"?
                 </AccordionTrigger>
-                <AccordionContent className="text-wood-darkest/70">
+                <AccordionContent className="text-wood-dark/70">
                   O termo "carismático" se refere à ênfase nos carismas ou dons do Espírito Santo mencionados em 1 Coríntios 12-14 e em outras partes do Novo Testamento. Como igreja carismática, acreditamos na manifestação contemporânea desses dons, como profecia, línguas, cura, discernimento e outros, mantendo-os em equilíbrio com nossa tradição litúrgica e sacramental.
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="item-3" className="border-wood/20">
-                <AccordionTrigger className="text-wood-dark hover:text-wood font-medium">
+                <AccordionTrigger className="hover:text-wood font-medium">
                   Como é o culto na Igreja Episcopal Carismática?
                 </AccordionTrigger>
-                <AccordionContent className="text-wood-darkest/70">
+                <AccordionContent className="text-wood-dark/70">
                   Nossos cultos combinam elementos da liturgia anglicana tradicional com expressões contemporâneas de adoração. Isso inclui o uso do Livro de Oração Comum, celebração regular da Eucaristia, leituras bíblicas estruturadas, mas também momentos de louvor espontâneo, oração pelos dons do Espírito, cura e ministração.
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="item-4" className="border-wood/20">
-                <AccordionTrigger className="text-wood-dark hover:text-wood font-medium">
+                <AccordionTrigger className="hover:text-wood font-medium">
                   Qual a importância dos sacramentos?
                 </AccordionTrigger>
-                <AccordionContent className="text-wood-darkest/70">
+                <AccordionContent className="text-wood-dark/70">
                   Na tradição episcopal, os sacramentos são sinais externos e visíveis de uma graça interna e espiritual. Reconhecemos os sete sacramentos históricos: Batismo, Eucaristia, Confirmação, Reconciliação, Matrimônio, Ordenação e Unção dos Enfermos. O Batismo e a Eucaristia são considerados os "sacramentos maiores" por terem sido instituídos diretamente por Cristo.
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="item-5" className="border-wood/20">
-                <AccordionTrigger className="text-wood-dark hover:text-wood font-medium">
+                <AccordionTrigger className="hover:text-wood font-medium">
                   Como funciona o EclesIA?
                 </AccordionTrigger>
-                <AccordionContent className="text-wood-darkest/70">
-                  O EclesIA é um chatbot baseado em inteligência artificial, treinado com informações sobre a Igreja Episcopal Carismática do Brasil e a tradição Anglicana. Ele foi desenvolvido para responder perguntas e fornecer informações sobre nossa fé, práticas, doutrinas e tradições. A IA continua aprendendo e melhorando com cada interação.
+                <AccordionContent className="text-wood-dark/70">
+                  O EclesIA é um chatbot baseado em inteligência artificial, treinado com informações sobre a Igreja Episcopal Carismática do Brasil e conta com uma Bíblia interativa. Ele foi desenvolvido para responder perguntas e fornecer informações sobre nossa fé, práticas, doutrinas e tradições. A IA continua aprendendo e melhorando com cada interação.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
           </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="py-16 bg-wood text-cream">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6 font-serif text-cream-light/100">Tire suas dúvidas com o EclesIA</h2>
-          <p className="text-cream-light/90 max-w-2xl mx-auto mb-8">
-            Inicie uma conversa com nossa IA e aprenda mais sobre a Igreja Episcopal Carismática do Brasil e a tradição Anglicana.
-          </p>
-          <Link to="/chat">
-            <Button className="bg-cream-light text-wood hover:bg-cream hover:text-wood-dark transition-all duration-300">
-              Conversar agora
-            </Button>
-          </Link>
+
+          {/* CTA Section */}
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-6 font-serif">Tire suas dúvidas com o EclesIA</h2>
+            <p className="text-wood-dark/90 max-w-2xl mx-auto mb-8">
+              Inicie uma conversa com nossa IA e aprenda mais sobre a Igreja Episcopal Carismática do Brasil e a tradição Anglicana.
+            </p>
+            <Link to="/chat">
+              <Button className="bg-wood text-white hover:bg-wood-dark transition-all duration-300">
+                Conversar agora
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
       
