@@ -21,6 +21,7 @@ const Bible = ({ onAuthModalToggle }) => {
   const [isLoading, setIsLoading] = useState(false); // Controle de carregamento da IA
   const [history, setHistory] = useState([]); // Histórico de consultas
   const [isHistoryVisible, setIsHistoryVisible] = useState(false); // Controle para exibir a box de histórico
+  const [selectedVerse, setSelectedVerse] = useState(null); // Versículo selecionado no celular
 
   const API_URL = 'https://www.abibliadigital.com.br/api';
   const API_TOKEN = import.meta.env.VITE_BIBLIA_API_TOKEN; // Token da API
@@ -108,6 +109,18 @@ const Bible = ({ onAuthModalToggle }) => {
       setBoxPosition({ x: event.pageX, y: event.pageY });
       setResponse('');
     }
+  };
+
+  const handleVerseTouch = (verse, event) => {
+    setSelectedVerse(verse.number); // Define o versículo selecionado
+    setSelectedText(verse.text); // Define o texto do versículo selecionado
+
+    // Calcula a posição do elemento tocado
+    const rect = event.target.getBoundingClientRect();
+    setBoxPosition({ x: rect.left, y: rect.bottom + window.scrollY }); // Posiciona a box logo abaixo do versículo
+
+    setIsBoxVisible(true); // Exibe a box de pergunta da IA
+    setResponse(''); // Reseta a resposta da IA
   };
 
   const addToHistory = (verse, response) => {
@@ -336,7 +349,13 @@ const Bible = ({ onAuthModalToggle }) => {
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 mb-16"> {/* Ajustado para largura total em mobile */}
             <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
               {verses.map((verse) => (
-                <p key={verse.number}>
+                <p
+                  key={verse.number}
+                  onTouchStart={(e) => handleVerseTouch(verse, e)} // Passa o evento para calcular a posição
+                  className={`relative ${
+                    selectedVerse === verse.number ? 'border-dashed border-b-2 border-wood-dark' : ''
+                  }`}
+                >
                   <strong>{verse.number}</strong> {verse.text}
                 </p>
               ))}
@@ -349,8 +368,8 @@ const Bible = ({ onAuthModalToggle }) => {
           <div
             className="absolute bg-white shadow-lg rounded-lg p-4 border border-wood-light"
             style={{
-              top: boxPosition.y,
-              left: boxPosition.x,
+              top: boxPosition.y, // Usa a posição calculada
+              left: boxPosition.x, // Usa a posição calculada
               width: '90%', // Ajustado para largura total em mobile
               maxWidth: '400px',
               minHeight: '150px',
