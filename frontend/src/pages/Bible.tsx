@@ -198,46 +198,53 @@ const Bible = ({ onAuthModalToggle }) => {
       <main className="flex-grow pt-[calc(4rem+4px)]">
         {/* Seletor de livros, capítulos e navegação */}
         <div className="bg-wood text-cream-light p-4 flex flex-wrap items-center justify-center relative"> {/* Adicionado flex-wrap para melhor responsividade */}
-          <div className="absolute left-4">
+          <div className="absolute left-4 right-4 flex items-center justify-between sm:justify-start space-x-2 sm:space-x-0"> {/* Ajustado para alinhar botões */}
             <button
               onClick={() => {
                 setShowSelector(!showSelector);
                 setIsSelectingBook(true); // Começa com a seleção de livros
               }}
-              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-sm sm:text-base" // Ajustado para texto menor em telas pequenas
+              className="p-1 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-xs sm:text-base" // Ajustado para largura menor em mobile
             >
               {selectedBook ? selectedBook.name : 'Selecione um livro'}
             </button>
-            {showSelector && (
-              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-full sm:w-[28rem]"> {/* Responsivo para largura total em mobile */}
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-center text-wood-dark font-bold text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
-                    {isSelectingBook ? 'Selecione um Livro' : 'Selecione um Capítulo'}
-                  </h3>
-                  <button
-                    onClick={() => setShowSelector(false)}
-                    className="text-wood-dark hover:text-wood-darkest"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-                <div
-                  className={`grid ${
-                    isSelectingBook ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-4 sm:grid-cols-6'
-                  } gap-3`} // Ajustado para menos colunas em telas pequenas
+            <button
+              onClick={() => setIsHistoryVisible(!isHistoryVisible)}
+              className="p-1 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-xs sm:text-sm sm:hidden" // Botão "Histórico" movido para a direita no mobile
+            >
+              Histórico
+            </button>
+          </div>
+          {showSelector && (
+            <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-full sm:w-[28rem]"> {/* Responsivo para largura total em mobile */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-center text-wood-dark font-bold text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
+                  {isSelectingBook ? 'Selecione um Livro' : 'Selecione um Capítulo'}
+                </h3>
+                <button
+                  onClick={() => setShowSelector(false)}
+                  className="text-wood-dark hover:text-wood-darkest"
                 >
-                  {isSelectingBook
-                    ? books.map((book) => (
-                        <button
-                          key={book.abbrev.pt}
-                          onClick={() => handleBookSelect(book)}
-                          className="p-3 bg-wood text-cream-light rounded-lg hover:bg-wood-dark text-xs sm:text-sm text-center truncate" // Texto menor em telas pequenas
-                          style={{ minHeight: '3rem' }}
-                        >
-                          {book.name}
-                        </button>
-                      ))
-                    : chapters.map((chapter) => (
+                  <X size={20} />
+                </button>
+              </div>
+              <div
+                className={`grid ${
+                  isSelectingBook ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-4 sm:grid-cols-6'
+                } gap-3`} // Ajustado para menos colunas em telas pequenas
+              >
+                {isSelectingBook
+                  ? books.map((book) => (
+                      <button
+                        key={book.abbrev.pt}
+                        onClick={() => handleBookSelect(book)}
+                        className="p-3 bg-wood text-cream-light rounded-lg hover:bg-wood-dark text-xs sm:text-sm text-center truncate" // Texto menor em telas pequenas
+                        style={{ minHeight: '3rem' }}
+                      >
+                        {book.name}
+                      </button>
+                    ))
+                  : chapters.map((chapter) => (
                         <button
                           key={chapter}
                           onClick={() => handleChapterSelect(chapter)}
@@ -251,16 +258,15 @@ const Bible = ({ onAuthModalToggle }) => {
                           {chapter}
                         </button>
                       ))}
-                </div>
-                <Button
-                  onClick={() => setShowSelector(false)}
-                  className="mt-4 bg-wood text-cream-light hover:bg-wood-dark w-full"
-                >
-                  Fechar
-                </Button>
               </div>
-            )}
-          </div>
+              <Button
+                onClick={() => setShowSelector(false)}
+                className="mt-4 bg-wood text-cream-light hover:bg-wood-dark w-full"
+              >
+                Fechar
+              </Button>
+            </div>
+          )}
 
           <div className="flex items-center justify-center space-x-4"> {/* Ajusta para setas nas laterais */}
             <Button

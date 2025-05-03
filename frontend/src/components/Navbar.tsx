@@ -38,7 +38,10 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
             </Button>
           </Link>
           <button
-            onClick={onAuthModalToggle}
+            onClick={() => {
+              onAuthModalToggle();
+              setIsMenuOpen(false); // Fecha a navbar
+            }}
             className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300"
           >
             <User size={20} />
@@ -53,18 +56,21 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden bg-cream-light border-t border-wood/10 animate-fade-in">
+        <div className="md:hidden bg-cream-light border-t border-wood/10 animate-fade-in"> {/* Mantido como estava */}
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <Link to="/" className="text-wood-dark hover:text-wood px-4 py-2 rounded-md" onClick={toggleMenu}>Início</Link>
             <Link to="/sobre" className="text-wood-dark hover:text-wood px-4 py-2 rounded-md" onClick={toggleMenu}>Sobre nós</Link>
             <Link to="/chat" onClick={toggleMenu}>
               <Button className="bg-wood hover:bg-wood-dark text-cream-light w-full">Iniciar conversa</Button>
             </Link>
-            <Link to="/bible" className="text-cream-light hover:text-cream px-4 py-2 rounded-md" onClick={toggleMenu}>
+            <Link to="/bible" className="bg-wood hover:bg-wood-dark text-cream-light px-4 py-2 rounded-md text-center flex items-center justify-center" onClick={toggleMenu}> {/* Adicionado alinhamento central */}
               Bíblia
             </Link>
             <button
-              onClick={onAuthModalToggle}
+              onClick={() => {
+                onAuthModalToggle();
+                setIsMenuOpen(false); // Fecha a navbar
+              }}
               className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300 w-full"
             >
               <User size={20} />
