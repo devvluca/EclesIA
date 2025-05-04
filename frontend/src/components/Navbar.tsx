@@ -66,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
                       signOut();
                       setIsDropdownOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-700 hover:text-white"
+                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-700 hover:text-white rounded-b-lg"
                   >
                     Sair
                   </button>

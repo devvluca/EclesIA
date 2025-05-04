@@ -5,6 +5,7 @@ import { FaGoogle } from 'react-icons/fa';
 import { useToast } from '@/hooks/use-toast'; // Usar o hook de toast para mensagens
 import { useAuth } from '@/context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react'; // Importar ícones
+import { useNavigate } from 'react-router-dom'; // Importar o hook useNavigate
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,8 +21,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false); // Estado para "Esqueci minha senha"
   const [isConfirmationScreen, setIsConfirmationScreen] = useState(false); // Tela de confirmação
+  const [isEmailSentScreen, setIsEmailSentScreen] = useState(false); // Novo estado para a tela de email enviado
   const { toast } = useToast(); // Hook para exibir mensagens
   const { user } = useAuth();
+  const navigate = useNavigate(); // Inicializar o hook useNavigate
 
   if (!isOpen) return null;
 
@@ -41,16 +44,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           onClose();
         }
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { name }, // Salvar o nome do usuário no Supabase
+            data: { name },
+            emailRedirectTo: `${window.location.origin}/welcome?name=${encodeURIComponent(name)}`, // Configurar redirecionamento no momento do registro
           },
         });
         if (error) throw error;
-        toast({ title: 'Sucesso', description: 'Cadastro realizado com sucesso! Verifique seu email para confirmar.', variant: 'default' });
-        onClose();
+        setIsEmailSentScreen(true); // Exibe a tela de email enviado
       }
     } catch (error: any) {
       toast({ title: 'Erro', description: error.message, variant: 'destructive' });
@@ -98,7 +101,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       <div className="bg-cream rounded-lg shadow-lg p-10 w-full max-w-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-wood">
-            {isConfirmationScreen
+            {isEmailSentScreen
+              ? 'Confirmação de Email'
+              : isConfirmationScreen
               ? 'Solicitação enviada'
               : isForgotPassword
               ? 'Esqueci minha senha'
@@ -110,7 +115,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             ✕
           </button>
         </div>
-        {isConfirmationScreen ? (
+        {isEmailSentScreen ? (
+          <div className="text-center space-y-4">
+            <p className="text-wood-dark">
+              Um email foi enviado para <strong>{email}</strong>. Clique no link de confirmação para completar o cadastro.
+            </p>
+            <Button
+              onClick={onClose}
+              className="bg-wood text-cream-light hover:bg-wood-dark"
+            >
+              Fechar
+            </Button>
+          </div>
+        ) : isConfirmationScreen ? (
           <div className="text-center space-y-4">
             <p className="text-wood-dark">
               Um email foi enviado para <strong>{email}</strong> com instruções para redefinir sua senha.
@@ -203,7 +220,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </Button>
           </form>
         )}
-        {!isForgotPassword && !isConfirmationScreen && (
+        {!isForgotPassword && !isConfirmationScreen && !isEmailSentScreen && (
           <div className="mt-6 text-center">
             <p
               className="text-sm text-wood-dark cursor-pointer"
@@ -213,7 +230,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </p>
           </div>
         )}
-        {!isForgotPassword && !isConfirmationScreen && (
+        {!isForgotPassword && !isConfirmationScreen && !isEmailSentScreen && (
           <div className="mt-6 text-center">
             <p className="text-sm text-wood-dark">
               {isLogin ? (
@@ -240,7 +257,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </p>
           </div>
         )}
-        {!isForgotPassword && !isConfirmationScreen && (
+        {!isForgotPassword && !isConfirmationScreen && !isEmailSentScreen && (
           <div className="mt-6 text-center">
             <p className="text-sm text-wood-dark">Ou entre com:</p>
             <div className="flex justify-center space-x-4 mt-4">
