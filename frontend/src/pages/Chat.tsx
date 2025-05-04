@@ -9,6 +9,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const allSuggestedQuestions = [
   "O que é a IECB?",
@@ -34,14 +36,22 @@ const allSuggestedQuestions = [
 ];
 
 const Chat = ({ onAuthModalToggle }) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [authModalOpened, setAuthModalOpened] = useState(false);
+
+  const getUserChatsKey = () => `chats_${user?.id}`; // Gera uma chave única para cada usuário
+
   const [chats, setChats] = useState<Record<string, { id: string; name: string; messages: Message[] }>>(() => {
-    const savedChats = localStorage.getItem('chats');
+    const savedChats = localStorage.getItem(getUserChatsKey());
     return savedChats ? JSON.parse(savedChats) : {};
   });
+
   const [currentChatId, setCurrentChatId] = useState(() => {
     const savedCurrentChatId = localStorage.getItem('currentChatId');
     return savedCurrentChatId || uuidv4();
   });
+
   const [messages, setMessages] = useState<Message[]>(chats[currentChatId]?.messages || []);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,13 +63,28 @@ const Chat = ({ onAuthModalToggle }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!loading && !user && !authModalOpened) {
+      setAuthModalOpened(true);
+      onAuthModalToggle(); // Abre o modal de autenticação se o usuário não estiver logado
+    }
+  }, [user, loading, onAuthModalToggle, authModalOpened]);
+
+  useEffect(() => {
     setSuggestedQuestions(shuffleArray(allSuggestedQuestions).slice(0, 3));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('chats', JSON.stringify(chats));
-    localStorage.setItem('currentChatId', currentChatId);
-  }, [chats, currentChatId]);
+    if (user) {
+      const savedChats = localStorage.getItem(getUserChatsKey());
+      setChats(savedChats ? JSON.parse(savedChats) : {});
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(getUserChatsKey(), JSON.stringify(chats));
+    }
+  }, [chats, user]);
 
   useEffect(() => {
     setMessages(chats[currentChatId]?.messages || []);
@@ -79,6 +104,14 @@ const Chat = ({ onAuthModalToggle }) => {
     }
   }, [currentChatId, chats]);
 
+  useEffect(() => {
+    // Garantir que o `currentChatId` sempre aponte para um chat válido
+    if (!chats[currentChatId] && Object.keys(chats).length > 0) {
+      const firstChatId = Object.keys(chats)[0]; // Seleciona o primeiro chat disponível
+      setCurrentChatId(firstChatId);
+    }
+  }, [chats, currentChatId]);
+
   const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
   const createNewChat = () => {
@@ -96,6 +129,7 @@ const Chat = ({ onAuthModalToggle }) => {
     delete updatedChats[chatId];
     setChats(updatedChats);
 
+    // Garantir que o `currentChatId` seja atualizado após a exclusão
     if (currentChatId === chatId) {
       const remainingChatIds = Object.keys(updatedChats);
       setCurrentChatId(remainingChatIds[0] ?? createNewChat());
@@ -134,12 +168,12 @@ const Chat = ({ onAuthModalToggle }) => {
     };
   }, []);
 
-  async function generateResponse(message: string, conversationHistory: Message[]) {
+  async function generateResponse(message: string, conversationHistory: Message[]): Promise<string> {
     try {
       const fullContext = conversationHistory
         .map((msg) => `${msg.role === 'user' ? 'Usuário' : 'Assistente'}: ${msg.content}`)
         .join('\n') + `\nUsuário: ${message}`;
-
+  
       const response = await fetch(import.meta.env.VITE_DIFY_API_URL, {
         method: 'POST',
         headers: {
@@ -154,25 +188,25 @@ const Chat = ({ onAuthModalToggle }) => {
           conversation_id: '',
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Dify API Error:', errorData);
         throw new Error(`API Error: ${response.status}`);
       }
-
+  
       const reader = response.body?.getReader();
       const decoder = new TextDecoder('utf-8');
       let result = '';
       let finalAnswer = '';
-
+  
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
+  
           result += decoder.decode(value, { stream: true });
-
+  
           const lines = result.split('\n');
           result = lines.pop() || '';
           for (const line of lines) {
@@ -183,18 +217,15 @@ const Chat = ({ onAuthModalToggle }) => {
                   const parsed = JSON.parse(jsonString);
                   if (parsed.answer) {
                     const plainText = parsed.answer.replace(/[*_~`>#-]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
-                    for (const char of plainText) {
-                      finalAnswer += char;
-                      setMessages((prev) => {
-                        const updatedMessages = [...prev];
-                        const lastMessage = updatedMessages[updatedMessages.length - 1];
-                        if (lastMessage.role === 'assistant') {
-                          lastMessage.content += char;
-                        }
-                        return updatedMessages;
-                      });
-                      await new Promise((resolve) => setTimeout(resolve, 10));
-                    }
+                    finalAnswer += plainText; // Adiciona o texto completo sem duplicação
+                    setMessages((prev) => {
+                      const updatedMessages = [...prev];
+                      const lastMessage = updatedMessages[updatedMessages.length - 1];
+                      if (lastMessage.role === 'assistant') {
+                        lastMessage.content = finalAnswer; // Atualiza o conteúdo completo
+                      }
+                      return updatedMessages;
+                    });
                   }
                 } catch (err) {
                   console.error('Erro ao processar chunk de streaming:', err);
@@ -204,11 +235,11 @@ const Chat = ({ onAuthModalToggle }) => {
           }
         }
       }
-
+  
       if (messages.length === 0) {
         updateChatTitle(currentChatId, message); // Atualiza o título do chat com a primeira pergunta
       }
-
+  
       return finalAnswer || 'Erro ao processar a resposta.';
     } catch (error) {
       console.error('Erro ao chamar a API Dify:', error);
@@ -223,7 +254,7 @@ const Chat = ({ onAuthModalToggle }) => {
       .split(' ') // Divide em palavras
       .filter((word) => word.length > 2 && !['que', 'é', 'na', 'os', 'das', 'um', 'uma', 'de', 'do', 'da'].includes(word.toLowerCase())) // Remove palavras comuns
       .slice(0, 4) // Limita a 4 palavras principais
-      .join(' '); // Junta as palavras principais
+      .join(' ') // Junta as palavras principais
   
     const newTitle = keywords.charAt(0).toUpperCase() + keywords.slice(1); // Capitaliza o título
     setChats((prev) => ({
@@ -304,6 +335,13 @@ const Chat = ({ onAuthModalToggle }) => {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  const deleteAllChats = () => {
+    if (window.confirm('Tem certeza que deseja apagar todos os chats?')) {
+      setChats({});
+      setCurrentChatId(createNewChat()); // Cria um novo chat vazio após apagar todos
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
@@ -328,7 +366,7 @@ const Chat = ({ onAuthModalToggle }) => {
               <div className="flex-grow overflow-y-auto">
                 {Object.values(chats).map((chat) => (
                   <div
-                    key={chat.id}
+                    key={chat.id} // Adicionado `key` única para cada chat
                     className={`p-4 cursor-pointer transition-all duration-300 ${
                       chat.id === currentChatId
                         ? 'bg-wood-light text-cream-light shadow-inner'
@@ -341,7 +379,7 @@ const Chat = ({ onAuthModalToggle }) => {
                       {menuOpenChatId === `rename-${chat.id}` ? (
                         <input
                           type="text"
-                          value={chats[chat.id].name}
+                          value={chats[chat.id]?.name || ''} // Garantir que `name` existe
                           onChange={(e) => renameChat(chat.id, e.target.value)}
                           onBlur={() => setMenuOpenChatId(null)} // Salva ao perder o foco
                           onKeyDown={(e) => {
@@ -392,12 +430,20 @@ const Chat = ({ onAuthModalToggle }) => {
               </div>
             )}
             {!isSidebarCollapsed && (
-              <Button
-                onClick={createNewChat}
-                className="m-4 bg-wood-light text-wood-dark rounded-lg hover:bg-wood transition-all duration-300"
-              >
-                <Plus size={16} /> Novo Chat
-              </Button>
+              <div className="m-4">
+                <Button
+                  onClick={createNewChat}
+                  className="w-full bg-wood-light text-wood-dark rounded-lg hover:bg-wood transition-all duration-300 mb-2"
+                >
+                  <Plus size={16} /> Novo Chat
+                </Button>
+                <Button
+                  onClick={deleteAllChats}
+                  className="w-full bg-red-500 text-white rounded-lg hover:bg-red-700 transition-all duration-300"
+                >
+                  <Trash size={16} /> Apagar Todos
+                </Button>
+              </div>
             )}
           </div>
 
@@ -406,7 +452,9 @@ const Chat = ({ onAuthModalToggle }) => {
           <div className="bg-wood p-4 text-cream-light flex" style={{ paddingLeft: '3rem' }}> {/* Adicionado paddingLeft para deslocar */}
           <img src="/img/episcopal_logo.png" alt="EclesIA Logo" className="h-11 mr-3" />
                 <div>
-                  <h2 className="font-serif text-lg text-cream">{chats[currentChatId]?.name || 'Novo Chat'}</h2>
+                  <h2 className="font-serif text-lg text-cream">
+                    {chats[currentChatId]?.name || 'Novo Chat'} {/* Verificação de existência */}
+                  </h2>
                   <p className="text-xs text-cream/80">Assistente da Igreja Episcopal Carismática</p>
               </div>
             </div>

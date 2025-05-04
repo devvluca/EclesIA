@@ -5,6 +5,8 @@ import Chat from '@/pages/Chat';
 import Bible from '@/pages/Bible';
 import AboutUs from '@/pages/AboutUs';
 import AuthModal from '@/components/AuthModal';
+import ResetPassword from '@/pages/ResetPassword';
+import Account from '@/pages/Account'; // Importar a nova página
 
 const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -21,6 +23,8 @@ const App = () => {
         <Route path="/chat" element={<Chat onAuthModalToggle={toggleAuthModal} />} />
         <Route path="/bible" element={<Bible onAuthModalToggle={toggleAuthModal} />} />
         <Route path="/sobre" element={<AboutUs onAuthModalToggle={toggleAuthModal} />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/account" element={<Account />} /> {/* Nova rota */}
       </Routes>
     </Router>
   );

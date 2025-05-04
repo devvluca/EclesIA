@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, User } from 'lucide-react'; // Importado o ícone de pessoa
+import { useAuth } from '@/context/AuthContext';
 
 interface NavbarProps {
   onAuthModalToggle: () => void;
@@ -9,9 +10,15 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Controle do dropdown
+  const { user, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   return (
@@ -37,15 +44,46 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
               Bíblia
             </Button>
           </Link>
-          <button
-            onClick={() => {
-              onAuthModalToggle();
-              setIsMenuOpen(false); // Fecha a navbar
-            }}
-            className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300"
-          >
-            <User size={20} />
-          </button>
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={toggleDropdown}
+                className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300"
+              >
+                Olá, {user.user_metadata?.name || 'Usuário'}
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 bg-white border border-wood-light rounded-lg shadow-lg z-10 w-40">
+                  <Link
+                    to="/account"
+                    className="block px-4 py-2 text-wood-dark hover:bg-wood-light hover:text-cream-light"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Minha conta
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setIsDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-700 hover:text-white"
+                  >
+                    Sair
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                onAuthModalToggle();
+                setIsMenuOpen(false); // Fecha a navbar
+              }}
+              className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300"
+            >
+              <User size={20} />
+            </button>
+          )}
         </div>
 
         <div className="md:hidden">
@@ -66,15 +104,26 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
             <Link to="/bible" className="bg-wood hover:bg-wood-dark text-cream-light px-4 py-2 rounded-md text-center flex items-center justify-center" onClick={toggleMenu}> {/* Adicionado alinhamento central */}
               Bíblia
             </Link>
-            <button
-              onClick={() => {
-                onAuthModalToggle();
-                setIsMenuOpen(false); // Fecha a navbar
-              }}
-              className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300 w-full"
-            >
-              <User size={20} />
-            </button>
+            {user ? (
+              <>
+                <Link to="/account" className="text-wood-dark hover:text-wood px-4 py-2 rounded-md" onClick={toggleMenu}>
+                  Minha conta
+                </Link>
+                <Button onClick={signOut} className="bg-red-600 hover:bg-red-700 w-full">
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  onAuthModalToggle();
+                  setIsMenuOpen(false); // Fecha a navbar
+                }}
+                className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300 w-full"
+              >
+                <User size={20} />
+              </button>
+            )}
           </div>
         </div>
       )}
