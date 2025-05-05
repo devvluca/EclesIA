@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Square, Plus, ChevronLeft, ChevronRight, MoreVertical, Edit, Trash } from 'lucide-react'; // Import icons
+import { Send, Square, Plus, ChevronLeft, ChevronRight, MoreVertical, Edit, Trash, ChevronUp, ChevronDown } from 'lucide-react'; // Import icons
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 
@@ -35,6 +35,113 @@ const allSuggestedQuestions = [
   "Qual é o propósito da vida segundo a Bíblia?",
 ];
 
+function LocalStorageUsageBar() {
+  // Estimativa de uso do localStorage (em bytes)
+  const [usage, setUsage] = useState(0);
+  const [percent, setPercent] = useState(0);
+
+  useEffect(() => {
+    function calcUsage() {
+      let total = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        const value = localStorage.getItem(key) || '';
+        total += key.length + value.length;
+      }
+      setUsage(total);
+      setPercent(Math.min(100, (total / (5 * 1024 * 1024)) * 100)); // 5MB limite típico
+    }
+    calcUsage();
+    window.addEventListener('storage', calcUsage);
+    return () => window.removeEventListener('storage', calcUsage);
+  }, []);
+
+  return (
+    <div className="w-full px-4 py-2">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs text-wood-dark">Memória do navegador</span>
+        <span className="text-xs text-wood-dark">{(usage / 1024).toFixed(1)} KB / 5120 KB</span>
+      </div>
+      <div className="w-full h-2 bg-wood-light rounded">
+        <div
+          className="h-2 rounded"
+          style={{
+            width: `${percent}%`,
+            background: percent > 90 ? '#dc2626' : percent > 70 ? '#f59e42' : '#15803d',
+            transition: 'width 0.3s'
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function LocalStorageUsageBarInline() {
+  // Estimativa de uso do localStorage (em bytes)
+  const [percent, setPercent] = useState(0);
+
+  useEffect(() => {
+    function calcUsage() {
+      let total = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        const value = localStorage.getItem(key) || '';
+        total += key.length + value.length;
+      }
+      setPercent(Math.min(100, (total / (5 * 1024 * 1024)) * 100)); // 5MB limite típico
+    }
+    calcUsage();
+    window.addEventListener('storage', calcUsage);
+    return () => window.removeEventListener('storage', calcUsage);
+  }, []);
+
+  // Gradiente de verde para amarelo para vermelho
+  let barColor = '#22c55e'; // verde
+  if (percent > 80) barColor = '#dc2626'; // vermelho
+  else if (percent > 60) barColor = '#f59e42'; // laranja
+  else if (percent > 30) barColor = '#eab308'; // amarelo
+
+  return (
+    <div className="flex flex-col items-end ml-4 min-w-[90px]">
+      <span className="text-[11px] text-cream/80 mb-0.5 font-semibold tracking-tight">Armazenamento</span>
+      <div
+        className="rounded-full bg-cream/30"
+        style={{
+          width: 80,
+          height: 12,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="rounded-full transition-all duration-300"
+          style={{
+            width: `${percent}%`,
+            height: 12,
+            background: barColor,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+        />
+        <span
+          className="absolute left-0 right-0 top-0 text-[10px] text-center font-semibold"
+          style={{
+            color: percent > 80 ? '#fff' : '#444',
+            lineHeight: '12px',
+            fontWeight: 600,
+            zIndex: 2,
+          }}
+        >
+          {Math.round(percent)}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const Chat = ({ onAuthModalToggle }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -59,6 +166,7 @@ const Chat = ({ onAuthModalToggle }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Sidebar começa recolhida
   const [sidebarTypingTitle, setSidebarTypingTitle] = useState(''); // Estado para o efeito de digitação do título
   const [menuOpenChatId, setMenuOpenChatId] = useState<string | null>(null); // Controle para o menu de opções
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(true); // Começa expandido para todos
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -345,6 +453,8 @@ const Chat = ({ onAuthModalToggle }) => {
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
+      {/* Barra de uso do localStorage */}
+      <LocalStorageUsageBar />
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-150px)] flex">
           {/* Sidebar */}
@@ -449,7 +559,7 @@ const Chat = ({ onAuthModalToggle }) => {
 
           {/* Chat Content */}
           <div className="flex-grow flex flex-col">
-          <div className="bg-wood p-4 text-cream-light flex" style={{ paddingLeft: '3rem' }}> {/* Adicionado paddingLeft para deslocar */}
+          <div className="bg-wood p-4 text-cream-light flex items-center" style={{ paddingLeft: '3rem' }}> {/* Adicionado paddingLeft para deslocar */}
           <img src="/img/episcopal_logo.png" alt="EclesIA Logo" className="h-11 mr-3" />
                 <div>
                   <h2 className="font-serif text-lg text-cream">
@@ -457,6 +567,7 @@ const Chat = ({ onAuthModalToggle }) => {
                   </h2>
                   <p className="text-xs text-cream/80">Assistente da Igreja Episcopal Carismática</p>
               </div>
+              <LocalStorageUsageBarInline />
             </div>
 
             <div className="flex-grow overflow-y-auto p-4">
@@ -466,19 +577,46 @@ const Chat = ({ onAuthModalToggle }) => {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-cream-light">
-              <p className="text-sm text-wood-dark mb-2">Sugestões de perguntas:</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestedQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setInput(question)}
-                    className="px-3 py-1 bg-wood-light text-wood-dark rounded-lg text-sm hover:bg-wood-dark hover:text-cream-light"
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
+            {/* Sugestões de perguntas */}
+            <div className={`p-4 ${!isSuggestionsVisible ? 'bg-transparent' : 'bg-cream-light'}`}>
+              <button
+                type="button"
+                onClick={() => setIsSuggestionsVisible((v) => !v)}
+                className={`flex items-center gap-2 font-medium border-none outline-none focus:outline-none mb-2 transition-colors
+                  ${isSuggestionsVisible
+                    ? 'text-wood-dark bg-transparent'
+                    : 'text-wood-dark bg-transparent w-full justify-start'}
+                `}
+                style={{ padding: 0 }}
+              >
+                {isSuggestionsVisible ? (
+                  <>
+                    <ChevronDown size={20} />
+                    <span className="text-sm select-none">Ocultar</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp size={20} />
+                    <span className="text-sm select-none">Expandir</span>
+                  </>
+                )}
+              </button>
+              {isSuggestionsVisible && (
+                <div className="mt-1 max-h-32 overflow-y-auto">
+                  <p className="text-sm text-wood-dark mb-2">Sugestões de perguntas:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedQuestions.map((question, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setInput(question)}
+                        className="px-3 py-1 bg-wood-light text-wood-dark rounded-lg text-sm hover:bg-wood-dark hover:text-cream-light"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleSendMessage} className="border-t border-wood/10 p-4 bg-cream-light">

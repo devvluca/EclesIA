@@ -13,6 +13,13 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Controle do dropdown
   const { user, signOut } = useAuth();
 
+  // Função utilitária para formatar o nome do usuário
+  const getFormattedFirstName = (fullName?: string) => {
+    if (!fullName) return 'Usuário';
+    const firstName = fullName.trim().split(' ')[0];
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+  };
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -50,13 +57,13 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
                 onClick={toggleDropdown}
                 className="text-wood-dark relative flex items-center justify-center p-2 rounded-full hover:bg-white/50 transition-all duration-300"
               >
-                Olá, {user.user_metadata?.name || 'Usuário'}
+                Olá, {getFormattedFirstName(user.user_metadata?.name)}
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 bg-white border border-wood-light rounded-lg shadow-lg z-10 w-40">
                   <Link
                     to="/account"
-                    className="block px-4 py-2 text-wood-dark hover:bg-wood-light hover:text-cream-light"
+                    className="block px-4 py-2 text-wood-dark hover:bg-wood-light hover:text-cream-light rounded-t-lg" // <-- arredonda só o topo
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Minha conta
