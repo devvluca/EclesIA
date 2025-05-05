@@ -450,6 +450,31 @@ const Chat = ({ onAuthModalToggle }) => {
     }
   };
 
+  // Bloqueio de acesso se não estiver logado
+  if (!loading && !user) {
+    return (
+      <div className="flex flex-col min-h-screen bg-cream-light">
+        <Navbar onAuthModalToggle={onAuthModalToggle} />
+        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-16">
+          <div className="bg-white border border-wood-light rounded-xl shadow-lg p-8 max-w-md text-center">
+            <h2 className="text-2xl font-serif text-wood-dark mb-4">Faça login para acessar o chat</h2>
+            <p className="mb-6 text-wood-dark">Você precisa estar autenticado para conversar com o assistente.</p>
+            <Button
+              className="bg-wood text-cream-light hover:bg-wood-dark"
+              onClick={() => {
+                setAuthModalOpened(true);
+                onAuthModalToggle();
+              }}
+            >
+              Fazer login
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />

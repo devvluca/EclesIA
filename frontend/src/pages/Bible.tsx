@@ -4,8 +4,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext'; // Adicione este import
 
 const Bible = ({ onAuthModalToggle }) => {
+  const { user, loading } = useAuth(); // Adicione esta linha
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [chapters, setChapters] = useState([]);
@@ -204,6 +206,28 @@ const Bible = ({ onAuthModalToggle }) => {
       fetchExplanation();
     }
   };
+
+  // Bloqueio de acesso se não estiver logado
+  if (!loading && !user) {
+    return (
+      <div className="flex flex-col min-h-screen bg-cream-light">
+        <Navbar onAuthModalToggle={onAuthModalToggle} />
+        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-16">
+          <div className="bg-white border border-wood-light rounded-xl shadow-lg p-8 max-w-md text-center">
+            <h2 className="text-2xl font-serif text-wood-dark mb-4">Faça login para acessar a Bíblia</h2>
+            <p className="mb-6 text-wood-dark">Você precisa estar autenticado para acessar esta funcionalidade.</p>
+            <Button
+              className="bg-wood text-cream-light hover:bg-wood-dark"
+              onClick={onAuthModalToggle}
+            >
+              Fazer login
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-cream-light" onMouseUp={(e) => handleTextSelection(e.nativeEvent)}>
