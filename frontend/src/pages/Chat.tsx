@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/supabaseClient';
 
 const allSuggestedQuestions = [
   "O que é a IECB?",
@@ -35,131 +36,14 @@ const allSuggestedQuestions = [
   "Qual é o propósito da vida segundo a Bíblia?",
 ];
 
-function LocalStorageUsageBar() {
-  // Estimativa de uso do localStorage (em bytes)
-  const [usage, setUsage] = useState(0);
-  const [percent, setPercent] = useState(0);
-
-  useEffect(() => {
-    function calcUsage() {
-      let total = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-        const value = localStorage.getItem(key) || '';
-        total += key.length + value.length;
-      }
-      setUsage(total);
-      setPercent(Math.min(100, (total / (5 * 1024 * 1024)) * 100)); // 5MB limite típico
-    }
-    calcUsage();
-    window.addEventListener('storage', calcUsage);
-    return () => window.removeEventListener('storage', calcUsage);
-  }, []);
-
-  return (
-    <div className="w-full px-4 py-2">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-wood-dark">Memória do navegador</span>
-        <span className="text-xs text-wood-dark">{(usage / 1024).toFixed(1)} KB / 5120 KB</span>
-      </div>
-      <div className="w-full h-2 bg-wood-light rounded">
-        <div
-          className="h-2 rounded"
-          style={{
-            width: `${percent}%`,
-            background: percent > 90 ? '#dc2626' : percent > 70 ? '#f59e42' : '#15803d',
-            transition: 'width 0.3s'
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function LocalStorageUsageBarInline() {
-  // Estimativa de uso do localStorage (em bytes)
-  const [percent, setPercent] = useState(0);
-
-  useEffect(() => {
-    function calcUsage() {
-      let total = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-        const value = localStorage.getItem(key) || '';
-        total += key.length + value.length;
-      }
-      setPercent(Math.min(100, (total / (5 * 1024 * 1024)) * 100)); // 5MB limite típico
-    }
-    calcUsage();
-    window.addEventListener('storage', calcUsage);
-    return () => window.removeEventListener('storage', calcUsage);
-  }, []);
-
-  // Gradiente de verde para amarelo para vermelho
-  let barColor = '#22c55e'; // verde
-  if (percent > 80) barColor = '#dc2626'; // vermelho
-  else if (percent > 60) barColor = '#f59e42'; // laranja
-  else if (percent > 30) barColor = '#eab308'; // amarelo
-
-  return (
-    <div className="flex flex-col items-end ml-4 min-w-[90px]">
-      <span className="text-[11px] text-cream/80 mb-0.5 font-semibold tracking-tight">Armazenamento</span>
-      <div
-        className="rounded-full bg-cream/30"
-        style={{
-          width: 80,
-          height: 12,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          className="rounded-full transition-all duration-300"
-          style={{
-            width: `${percent}%`,
-            height: 12,
-            background: barColor,
-            position: 'absolute',
-            left: 0,
-            top: 0,
-          }}
-        />
-        <span
-          className="absolute left-0 right-0 top-0 text-[10px] text-center font-semibold"
-          style={{
-            color: percent > 80 ? '#fff' : '#444',
-            lineHeight: '12px',
-            fontWeight: 600,
-            zIndex: 2,
-          }}
-        >
-          {Math.round(percent)}%
-        </span>
-      </div>
-    </div>
-  );
-}
-
 const Chat = ({ onAuthModalToggle }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [authModalOpened, setAuthModalOpened] = useState(false);
 
-  const getUserChatsKey = () => `chats_${user?.id}`; // Gera uma chave única para cada usuário
-
-  const [chats, setChats] = useState<Record<string, { id: string; name: string; messages: Message[] }>>(() => {
-    const savedChats = localStorage.getItem(getUserChatsKey());
-    return savedChats ? JSON.parse(savedChats) : {};
-  });
-
-  const [currentChatId, setCurrentChatId] = useState(() => {
-    const savedCurrentChatId = localStorage.getItem('currentChatId');
-    return savedCurrentChatId || uuidv4();
-  });
-
-  const [messages, setMessages] = useState<Message[]>(chats[currentChatId]?.messages || []);
+  const [chats, setChats] = useState<Record<string, { id: string; name: string; messages: Message[] }>>({});
+  const [currentChatId, setCurrentChatId] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
@@ -167,6 +51,7 @@ const Chat = ({ onAuthModalToggle }) => {
   const [sidebarTypingTitle, setSidebarTypingTitle] = useState(''); // Estado para o efeito de digitação do título
   const [menuOpenChatId, setMenuOpenChatId] = useState<string | null>(null); // Controle para o menu de opções
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(true); // Começa expandido para todos
+  const [isDbLoading, setIsDbLoading] = useState(true); // Estado para controlar o carregamento inicial do banco de dados
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -181,22 +66,79 @@ const Chat = ({ onAuthModalToggle }) => {
     setSuggestedQuestions(shuffleArray(allSuggestedQuestions).slice(0, 3));
   }, []);
 
+  // Carrega os chats do usuário do Supabase quando o usuário estiver autenticado
   useEffect(() => {
-    if (user) {
-      const savedChats = localStorage.getItem(getUserChatsKey());
-      setChats(savedChats ? JSON.parse(savedChats) : {});
-    }
+    const fetchUserChats = async () => {
+      if (!user) return;
+      
+      setIsDbLoading(true);
+      
+      try {
+        // Busca todos os chats do usuário
+        const { data: chatsData, error: chatsError } = await supabase
+          .from('chats')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+          
+        if (chatsError) throw chatsError;
+        
+        const userChats: Record<string, { id: string; name: string; messages: Message[] }> = {};
+        
+        // Para cada chat, busca suas mensagens
+        for (const chat of chatsData || []) {
+          const { data: messagesData, error: messagesError } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('chat_id', chat.id)
+            .order('timestamp', { ascending: true });
+            
+          if (messagesError) throw messagesError;
+          
+          userChats[chat.id] = {
+            id: chat.id,
+            name: chat.name,
+            messages: (messagesData || []).map(msg => ({
+              id: msg.id,
+              content: msg.content,
+              role: msg.role,
+              timestamp: new Date(msg.timestamp),
+            })),
+          };
+        }
+        
+        setChats(userChats);
+        
+        // Se tiver chats, seleciona o primeiro, senão cria um novo
+        if (Object.keys(userChats).length > 0) {
+          const firstChatId = Object.keys(userChats)[0];
+          setCurrentChatId(firstChatId);
+          setMessages(userChats[firstChatId].messages);
+        } else {
+          const newChatId = await createNewChat();
+          setCurrentChatId(newChatId);
+          setMessages([]);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar chats do Supabase:', error);
+        toast({
+          title: 'Erro ao carregar conversas',
+          description: 'Não foi possível recuperar suas conversas anteriores.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsDbLoading(false);
+      }
+    };
+    
+    fetchUserChats();
   }, [user]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem(getUserChatsKey(), JSON.stringify(chats));
+    if (currentChatId && chats[currentChatId]) {
+      setMessages(chats[currentChatId].messages || []);
     }
-  }, [chats, user]);
-
-  useEffect(() => {
-    setMessages(chats[currentChatId]?.messages || []);
-  }, [currentChatId]);
+  }, [currentChatId, chats]);
 
   useEffect(() => {
     if (chats[currentChatId]?.name) {
@@ -212,46 +154,117 @@ const Chat = ({ onAuthModalToggle }) => {
     }
   }, [currentChatId, chats]);
 
-  useEffect(() => {
-    // Garantir que o `currentChatId` sempre aponte para um chat válido
-    if (!chats[currentChatId] && Object.keys(chats).length > 0) {
-      const firstChatId = Object.keys(chats)[0]; // Seleciona o primeiro chat disponível
-      setCurrentChatId(firstChatId);
-    }
-  }, [chats, currentChatId]);
-
   const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
-  const createNewChat = () => {
-    const newChatId = uuidv4();
-    setChats((prev) => ({
-      ...prev,
-      [newChatId]: { id: newChatId, name: 'Novo Chat', messages: [] }, // Corrigido para evitar "undefined"
-    }));
-    setCurrentChatId(newChatId);
-    return newChatId;
-  };
-
-  const deleteChat = (chatId) => {
-    const updatedChats = { ...chats };
-    delete updatedChats[chatId];
-    setChats(updatedChats);
-
-    // Garantir que o `currentChatId` seja atualizado após a exclusão
-    if (currentChatId === chatId) {
-      const remainingChatIds = Object.keys(updatedChats);
-      setCurrentChatId(remainingChatIds[0] ?? createNewChat());
+  const createNewChat = async () => {
+    if (!user) return '';
+    
+    try {
+      const newChatId = uuidv4();
+      
+      // Insere o novo chat no Supabase
+      const { error } = await supabase
+        .from('chats')
+        .insert({
+          id: newChatId,
+          user_id: user.id,
+          name: 'Novo Chat',
+        });
+        
+      if (error) throw error;
+      
+      // Atualiza o estado local
+      setChats((prev) => ({
+        ...prev,
+        [newChatId]: { id: newChatId, name: 'Novo Chat', messages: [] },
+      }));
+      
+      setCurrentChatId(newChatId);
+      return newChatId;
+    } catch (error) {
+      console.error('Erro ao criar novo chat:', error);
+      toast({
+        title: 'Erro ao criar nova conversa',
+        description: 'Não foi possível iniciar uma nova conversa. Tente novamente.',
+        variant: 'destructive',
+      });
+      return '';
     }
   };
 
-  const renameChat = (chatId, newName) => {
-    setChats((prev) => ({
-      ...prev,
-      [chatId]: {
-        ...prev[chatId],
-        name: newName || 'Novo Chat',
-      },
-    }));
+  const deleteChat = async (chatId) => {
+    if (!user) return;
+    
+    try {
+      // Primeiro exclui todas as mensagens do chat
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('chat_id', chatId);
+        
+      if (messagesError) throw messagesError;
+      
+      // Depois exclui o chat
+      const { error: chatError } = await supabase
+        .from('chats')
+        .delete()
+        .eq('id', chatId);
+        
+      if (chatError) throw chatError;
+      
+      // Atualiza o estado local
+      const updatedChats = { ...chats };
+      delete updatedChats[chatId];
+      setChats(updatedChats);
+      
+      // Garantir que o `currentChatId` seja atualizado após a exclusão
+      if (currentChatId === chatId) {
+        const remainingChatIds = Object.keys(updatedChats);
+        if (remainingChatIds.length > 0) {
+          setCurrentChatId(remainingChatIds[0]);
+        } else {
+          const newChatId = await createNewChat();
+          setCurrentChatId(newChatId);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao excluir chat:', error);
+      toast({
+        title: 'Erro ao excluir conversa',
+        description: 'Não foi possível excluir esta conversa. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const renameChat = async (chatId, newName) => {
+    if (!user) return;
+    
+    try {
+      // Atualiza o nome do chat no Supabase
+      const { error } = await supabase
+        .from('chats')
+        .update({ name: newName || 'Novo Chat' })
+        .eq('id', chatId);
+        
+      if (error) throw error;
+      
+      // Atualiza o estado local
+      setChats((prev) => ({
+        ...prev,
+        [chatId]: {
+          ...prev[chatId],
+          name: newName || 'Novo Chat',
+        },
+      }));
+    } catch (error) {
+      console.error('Erro ao renomear chat:', error);
+      toast({
+        title: 'Erro ao renomear conversa',
+        description: 'Não foi possível renomear esta conversa. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleMenuOption = (chatId, option) => {
@@ -278,8 +291,18 @@ const Chat = ({ onAuthModalToggle }) => {
 
   async function generateResponse(message: string, conversationHistory: Message[]): Promise<string> {
     try {
-      const fullContext = conversationHistory
-        .map((msg) => `${msg.role === 'user' ? 'Usuário' : 'Assistente'}: ${msg.content}`)
+      // Verifica se o histórico de conversa existe antes de mapeá-lo
+      const safeHistory = conversationHistory || [];
+      
+      const fullContext = safeHistory
+        .map((msg) => {
+          // Verificação de segurança para garantir que msg e msg.role existem
+          if (!msg || typeof msg.role === 'undefined') {
+            return '';
+          }
+          return `${msg.role === 'user' ? 'Usuário' : 'Assistente'}: ${msg.content}`;
+        })
+        .filter(line => line !== '') // Remove linhas vazias
         .join('\n') + `\nUsuário: ${message}`;
   
       const response = await fetch(import.meta.env.VITE_DIFY_API_URL, {
@@ -355,56 +378,110 @@ const Chat = ({ onAuthModalToggle }) => {
     }
   }
 
-  const updateChatTitle = (chatId: string, userMessage: string) => {
+  const updateChatTitle = async (chatId: string, userMessage: string) => {
+    if (!user) return;
+    
     // Usa uma abordagem para extrair o assunto principal da pergunta
     const keywords = userMessage
       .replace(/[^\w\s]/g, '') // Remove pontuações
       .split(' ') // Divide em palavras
       .filter((word) => word.length > 2 && !['que', 'é', 'na', 'os', 'das', 'um', 'uma', 'de', 'do', 'da'].includes(word.toLowerCase())) // Remove palavras comuns
       .slice(0, 4) // Limita a 4 palavras principais
-      .join(' ') // Junta as palavras principais
+      .join(' '); // Junta as palavras principais
   
-    const newTitle = keywords.charAt(0).toUpperCase() + keywords.slice(1); // Capitaliza o título
-    setChats((prev) => ({
-      ...prev,
-      [chatId]: {
-        ...prev[chatId],
-        name: newTitle || 'Novo Chat',
-      },
-    }));
+    const newTitle = keywords.charAt(0).toUpperCase() + keywords.slice(1) || 'Novo Chat'; // Capitaliza o título
+    
+    try {
+      // Atualiza o título no Supabase
+      const { error } = await supabase
+        .from('chats')
+        .update({ name: newTitle })
+        .eq('id', chatId);
+        
+      if (error) throw error;
+      
+      // Atualiza o estado local
+      setChats((prev) => ({
+        ...prev,
+        [chatId]: {
+          ...prev[chatId],
+          name: newTitle,
+        },
+      }));
+    } catch (error) {
+      console.error('Erro ao atualizar título do chat:', error);
+    }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!input.trim()) return;
+    if (!input.trim() || !user) return;
 
+    // Verifica se currentChatId é válido, se não, cria um novo chat
+    if (!currentChatId) {
+      const newChatId = await createNewChat();
+      if (!newChatId) {
+        toast({
+          title: 'Erro ao criar conversa',
+          description: 'Não foi possível iniciar uma nova conversa. Tente novamente.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setCurrentChatId(newChatId);
+    }
+
+    const userMessageId = uuidv4();
     const userMessage: Message = {
-      id: uuidv4(),
+      id: userMessageId,
       content: input,
       role: 'user',
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Garante que messages é sempre um array antes de atualizar
+    setMessages((prev) => [...(Array.isArray(prev) ? prev : []), userMessage]);
     setInput('');
     setIsLoading(true);
 
-    if (messages.length === 0) {
-      updateChatTitle(currentChatId, input); // Atualiza o título do chat com base na primeira mensagem
+    // Verifica se messages existe e é um array antes de verificar length
+    if (!messages || messages.length === 0) {
+      await updateChatTitle(currentChatId, input);
     }
 
+    const aiMessageId = uuidv4();
     const aiMessage: Message = {
-      id: uuidv4(),
+      id: aiMessageId,
       content: '',
       role: 'assistant',
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, aiMessage]);
+    
+    // Garante que messages é sempre um array antes de atualizar
+    setMessages((prev) => [...(Array.isArray(prev) ? prev : []), aiMessage]);
 
     try {
-      const aiResponseContent = await generateResponse(input, [...messages, userMessage]);
+      // Salva a mensagem do usuário no Supabase
+      const { error: userMsgError } = await supabase
+        .from('messages')
+        .insert({
+          id: userMessageId,
+          chat_id: currentChatId,
+          content: input,
+          role: 'user',
+          timestamp: new Date().toISOString(),
+        });
+        
+      if (userMsgError) throw userMsgError;
+      
+      // Certifica-se de que messages é um array válido antes de passá-lo
+      const safeMessages = Array.isArray(messages) ? messages : [];
+      
+      // Gera a resposta do assistente
+      const aiResponseContent = await generateResponse(input, [...safeMessages, userMessage]);
 
+      // Atualiza o estado local com a resposta do assistente
       setMessages((prev) => {
         const updatedMessages = [...prev];
         const lastMessage = updatedMessages[updatedMessages.length - 1];
@@ -414,6 +491,20 @@ const Chat = ({ onAuthModalToggle }) => {
         return updatedMessages;
       });
 
+      // Salva a resposta do assistente no Supabase
+      const { error: aiMsgError } = await supabase
+        .from('messages')
+        .insert({
+          id: aiMessageId,
+          chat_id: currentChatId,
+          content: aiResponseContent,
+          role: 'assistant',
+          timestamp: new Date().toISOString(),
+        });
+        
+      if (aiMsgError) throw aiMsgError;
+      
+      // Atualiza o estado local dos chats
       setChats((prev) => ({
         ...prev,
         [currentChatId]: {
@@ -443,12 +534,59 @@ const Chat = ({ onAuthModalToggle }) => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const deleteAllChats = () => {
+  const deleteAllChats = async () => {
+    if (!user) return;
+    
     if (window.confirm('Tem certeza que deseja apagar todos os chats?')) {
-      setChats({});
-      setCurrentChatId(createNewChat()); // Cria um novo chat vazio após apagar todos
+      try {
+        // Primeiro exclui todas as mensagens dos chats do usuário
+        const { error: messagesError } = await supabase
+          .from('messages')
+          .delete()
+          .in('chat_id', Object.keys(chats));
+          
+        if (messagesError) throw messagesError;
+        
+        // Depois exclui todos os chats do usuário
+        const { error: chatsError } = await supabase
+          .from('chats')
+          .delete()
+          .eq('user_id', user.id);
+          
+        if (chatsError) throw chatsError;
+        
+        // Atualiza o estado local
+        setChats({});
+        // Cria um novo chat vazio após apagar todos
+        const newChatId = await createNewChat();
+        setCurrentChatId(newChatId);
+      } catch (error) {
+        console.error('Erro ao excluir todos os chats:', error);
+        toast({
+          title: 'Erro ao excluir conversas',
+          description: 'Não foi possível excluir todas as conversas. Tente novamente.',
+          variant: 'destructive',
+        });
+      }
     }
   };
+
+  // Adiciona uma função para limpar o localStorage se necessário
+  const clearLocalStorage = () => {
+    // Remove qualquer dado antigo do localStorage que possa estar causando conflitos
+    localStorage.removeItem('currentChatId');
+    const localStorageKeys = Object.keys(localStorage);
+    localStorageKeys.forEach(key => {
+      if (key.startsWith('chats_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
+  useEffect(() => {
+    // Tentar limpar o localStorage ao iniciar para garantir uma experiência limpa
+    clearLocalStorage();
+  }, []);
 
   // Bloqueio de acesso se não estiver logado
   if (!loading && !user) {
@@ -475,11 +613,28 @@ const Chat = ({ onAuthModalToggle }) => {
     );
   }
 
+  // Exibe um indicador de carregamento enquanto busca dados do banco
+  if (isDbLoading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-cream-light">
+        <Navbar onAuthModalToggle={onAuthModalToggle} />
+        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-16">
+          <div className="bg-white border border-wood-light rounded-xl shadow-lg p-8 max-w-md text-center">
+            <h2 className="text-2xl font-serif text-wood-dark mb-4">Carregando suas conversas</h2>
+            <p className="mb-6 text-wood-dark">Estamos buscando os seus chats anteriores...</p>
+            <div className="flex justify-center">
+              <div className="w-8 h-8 border-4 border-wood-light border-t-wood rounded-full animate-spin"></div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
-      {/* Barra de uso do localStorage */}
-      <LocalStorageUsageBar />
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-150px)] flex">
           {/* Sidebar */}
@@ -592,7 +747,6 @@ const Chat = ({ onAuthModalToggle }) => {
                   </h2>
                   <p className="text-xs text-cream/80">Assistente da Igreja Episcopal Carismática</p>
               </div>
-              <LocalStorageUsageBarInline />
             </div>
 
             <div className="flex-grow overflow-y-auto p-4">
@@ -671,7 +825,3 @@ const Chat = ({ onAuthModalToggle }) => {
 };
 
 export default Chat;
-
-function updateChatTitle(currentChatId: string, message: string) {
-  throw new Error('Function not implemented.');
-}
