@@ -114,7 +114,7 @@ const Chat = ({ onAuthModalToggle }) => {
         if (Object.keys(userChats).length > 0) {
           const firstChatId = Object.keys(userChats)[0];
           setCurrentChatId(firstChatId);
-          setMessages(userChats[firstChatId].messages);
+          setMessages(Array.isArray(userChats[firstChatId].messages) ? userChats[firstChatId].messages : []);
         } else {
           const newChatId = await createNewChat();
           setCurrentChatId(newChatId);
@@ -137,7 +137,7 @@ const Chat = ({ onAuthModalToggle }) => {
 
   useEffect(() => {
     if (currentChatId && chats[currentChatId]) {
-      setMessages(chats[currentChatId].messages || []);
+      setMessages(Array.isArray(chats[currentChatId].messages) ? chats[currentChatId].messages : []);
     }
   }, [currentChatId, chats]);
 
@@ -181,6 +181,7 @@ const Chat = ({ onAuthModalToggle }) => {
       }));
       
       setCurrentChatId(newChatId);
+      setMessages([]);
       return newChatId;
     } catch (error) {
       console.error('Erro ao criar novo chat:', error);
@@ -293,7 +294,9 @@ const Chat = ({ onAuthModalToggle }) => {
   async function generateResponse(message: string, conversationHistory: Message[]): Promise<string> {
     try {
       // Verifica se o histórico de conversa existe antes de mapeá-lo
-      const safeHistory = conversationHistory || [];
+      const safeHistory = (conversationHistory || []).filter(
+        (msg) => msg && typeof msg.role !== 'undefined' && typeof msg.content !== 'undefined'
+      );
       
       const fullContext = safeHistory
         .map((msg) => {
@@ -351,9 +354,9 @@ const Chat = ({ onAuthModalToggle }) => {
                     const plainText = parsed.answer.replace(/[*_~`>#-]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
                     finalAnswer += plainText; // Adiciona o texto completo sem duplicação
                     setMessages((prev) => {
-                      const updatedMessages = [...prev];
+                      const updatedMessages = [...(Array.isArray(prev) ? prev : [])];
                       const lastMessage = updatedMessages[updatedMessages.length - 1];
-                      if (lastMessage.role === 'assistant') {
+                      if (lastMessage && lastMessage.role === 'assistant') {
                         lastMessage.content = finalAnswer; // Atualiza o conteúdo completo
                       }
                       return updatedMessages;
@@ -484,9 +487,9 @@ const Chat = ({ onAuthModalToggle }) => {
 
       // Atualiza o estado local com a resposta do assistente
       setMessages((prev) => {
-        const updatedMessages = [...prev];
+        const updatedMessages = [...(Array.isArray(prev) ? prev : [])];
         const lastMessage = updatedMessages[updatedMessages.length - 1];
-        if (lastMessage.role === 'assistant') {
+        if (lastMessage && lastMessage.role === 'assistant') {
           lastMessage.content = aiResponseContent;
         }
         return updatedMessages;
@@ -510,7 +513,7 @@ const Chat = ({ onAuthModalToggle }) => {
         ...prev,
         [currentChatId]: {
           ...prev[currentChatId],
-          messages: [...messages, userMessage, { ...aiMessage, content: aiResponseContent }],
+          messages: [...(Array.isArray(messages) ? messages : []), userMessage, { ...aiMessage, content: aiResponseContent }],
         },
       }));
 
