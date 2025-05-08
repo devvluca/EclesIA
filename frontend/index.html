@@ -37,7 +37,7 @@
               // Força atualização do SW se houver uma nova versão
               if (registration.waiting) {
                 registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
+                // window.location.reload(); // Remova ou comente esta linha
               }
               registration.onupdatefound = () => {
                 const installingWorker = registration.installing;
@@ -45,8 +45,7 @@
                   installingWorker.onstatechange = () => {
                     if (installingWorker.state === 'installed') {
                       if (navigator.serviceWorker.controller) {
-                        // Nova atualização disponível, força reload
-                        window.location.reload();
+                        // window.location.reload(); // Remova ou comente esta linha
                       }
                     }
                   };
