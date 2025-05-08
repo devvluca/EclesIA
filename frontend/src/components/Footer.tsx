@@ -43,7 +43,8 @@ const Footer = () => {
           <div>
             <h3 className="text-cream-light text-xl mb-4 font-serif">Relatar um problema</h3>
             <p className="text-cream/80 mb-3">
-              Encontrou um bug ou tem uma sugestão? Entre em contato:
+              Encontrou um bug <br />
+              ou tem uma sugestão? Entre em contato:
             </p>
             <ul className="space-y-3">
               <li>
