@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Square, Plus, ChevronLeft, ChevronRight, MoreVertical, Edit, Trash, ChevronUp, ChevronDown } from 'lucide-react'; // Import icons
+import { Send, Square, Plus, ChevronLeft, ChevronRight, MoreVertical, Edit, Trash, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-react'; // Adicionado AlertTriangle
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 
@@ -41,7 +41,7 @@ const Chat = ({ onAuthModalToggle }) => {
   const navigate = useNavigate();
   const [authModalOpened, setAuthModalOpened] = useState(false);
 
-  const [chats, setChats] = useState<Record<string, { id: string; name: string; messages: Message[] }>>({});
+  const [chats, setChats] = useState<Record<string, { id: string; name: string; messages: Message[]; created_at?: string }>>({});
   const [currentChatId, setCurrentChatId] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -83,7 +83,7 @@ const Chat = ({ onAuthModalToggle }) => {
           
         if (chatsError) throw chatsError;
         
-        const userChats: Record<string, { id: string; name: string; messages: Message[] }> = {};
+        const userChats: Record<string, { id: string; name: string; messages: Message[]; created_at?: string }> = {};
         
         // Para cada chat, busca suas mensagens
         for (const chat of chatsData || []) {
@@ -98,6 +98,7 @@ const Chat = ({ onAuthModalToggle }) => {
           userChats[chat.id] = {
             id: chat.id,
             name: chat.name,
+            created_at: chat.created_at,
             messages: (messagesData || []).map(msg => ({
               id: msg.id,
               content: msg.content,
@@ -632,6 +633,230 @@ const Chat = ({ onAuthModalToggle }) => {
     );
   }
 
+  // Adiciona variáveis para agrupar chats por período
+  const groupChatsByTime = (chats: Record<string, { id: string; name: string; messages: Message[]; created_at?: string }>) => {
+    // Verifica se chats é um objeto vazio antes de continuar
+    if (!chats || Object.keys(chats).length === 0) {
+      return {
+        today: [],
+        week: [],
+        month: [],
+        older: [],
+        aboutToDelete: []
+      };
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    const fortyFiveDaysAgo = new Date(today);
+    fortyFiveDaysAgo.setDate(today.getDate() - 45);
+    
+    const groups = {
+      today: [] as Array<{ id: string; name: string; messages: Message[]; created_at?: string }>,
+      week: [] as Array<{ id: string; name: string; messages: Message[]; created_at?: string }>,
+      month: [] as Array<{ id: string; name: string; messages: Message[]; created_at?: string }>,
+      older: [] as Array<{ id: string; name: string; messages: Message[]; created_at?: string }>,
+      aboutToDelete: [] as Array<{ id: string; name: string; messages: Message[]; created_at?: string }>,
+    };
+    
+    Object.values(chats).forEach(chat => {
+      const chatDate = chat.created_at ? new Date(chat.created_at) : new Date();
+      
+      if (chatDate >= today) {
+        groups.today.push(chat);
+      } else if (chatDate >= sevenDaysAgo) {
+        groups.week.push(chat);
+      } else if (chatDate >= thirtyDaysAgo) {
+        groups.month.push(chat);
+      } else if (chatDate >= fortyFiveDaysAgo) {
+        groups.older.push(chat);
+      } else {
+        groups.aboutToDelete.push(chat);
+      }
+    });
+    
+    return groups;
+  };
+
+  // Função para calcular dias restantes antes da exclusão
+  const getDaysBeforeDeletion = (createdDate: string): number => {
+    if (!createdDate) return 50; // Retorna um valor padrão se não houver data
+    
+    const today = new Date();
+    const created = new Date(createdDate);
+    const diff = today.getTime() - created.getTime();
+    const diffDays = Math.floor(diff / (1000 * 3600 * 24));
+    return 50 - diffDays; // 50 dias antes da exclusão automática
+  };
+
+  // Renderiza o sidebar com as seções de tempo
+  const renderChatSidebar = () => {
+    if (isSidebarCollapsed) return null;
+
+    try {
+      const chatGroups = groupChatsByTime(chats);
+      
+      return (
+        <>
+          <div className="flex-grow overflow-y-auto px-2">
+            {chatGroups.today.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-xs text-cream-light/70 font-semibold px-2 mb-1">Hoje</h3>
+                {chatGroups.today.map((chat) => renderChatItem(chat))}
+              </div>
+            )}
+            
+            {chatGroups.week.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-xs text-cream-light/70 font-semibold px-2 mb-1">7 Dias Anteriores</h3>
+                {chatGroups.week.map((chat) => renderChatItem(chat))}
+              </div>
+            )}
+            
+            {chatGroups.month.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-xs text-cream-light/70 font-semibold px-2 mb-1">30 Dias Anteriores</h3>
+                {chatGroups.month.map((chat) => renderChatItem(chat))}
+              </div>
+            )}
+            
+            {chatGroups.older.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-xs text-cream-light/70 font-semibold px-2 mb-1">Mais de 30 Dias</h3>
+                {chatGroups.older.map((chat) => renderChatItem(chat))}
+              </div>
+            )}
+            
+            {chatGroups.aboutToDelete.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-xs text-red-400 font-semibold px-2 mb-1 flex items-center">
+                  <AlertTriangle size={14} className="mr-1" />
+                  Serão excluídos em breve
+                </h3>
+                {chatGroups.aboutToDelete.map((chat) => renderChatItem(chat, true))}
+              </div>
+            )}
+          </div>
+          
+          <div className="m-4">
+            <Button
+              onClick={createNewChat}
+              className="w-full bg-wood-light text-wood-dark rounded-lg hover:bg-wood transition-all duration-300 mb-2"
+            >
+              <Plus size={16} /> Novo Chat
+            </Button>
+            <Button
+              onClick={deleteAllChats}
+              className="w-full bg-red-500 text-white rounded-lg hover:bg-red-700 transition-all duration-300"
+            >
+              <Trash size={16} /> Apagar Todos
+            </Button>
+          </div>
+        </>
+      );
+    } catch (error) {
+      console.error("Erro ao renderizar sidebar:", error);
+      return (
+        <div className="flex-grow overflow-y-auto px-2 py-4">
+          <p className="text-xs text-cream-light/80 px-2">Nenhuma conversa encontrada.</p>
+          <div className="m-4">
+            <Button
+              onClick={createNewChat}
+              className="w-full bg-wood-light text-wood-dark rounded-lg hover:bg-wood transition-all duration-300 mb-2"
+            >
+              <Plus size={16} /> Novo Chat
+            </Button>
+          </div>
+        </div>
+      );
+    }
+  };
+
+  // Renderiza um item de chat individual
+  const renderChatItem = (chat: { id: string; name: string; messages: Message[]; created_at?: string }, isAboutToDelete = false) => {
+    const days = chat.created_at ? getDaysBeforeDeletion(chat.created_at) : null;
+    
+    return (
+      <div
+        key={chat.id}
+        className={`py-3 px-3 cursor-pointer transition-all duration-300 ${
+          chat.id === currentChatId
+            ? 'bg-wood-light text-cream-light shadow-inner'
+            : 'hover:bg-wood-light text-cream-light'
+        } flex items-center justify-between rounded-lg my-1 ${isAboutToDelete ? 'border border-red-400/40' : ''}`}
+        onClick={() => setCurrentChatId(chat.id)}
+        onDoubleClick={() => setMenuOpenChatId(`rename-${chat.id}`)}
+      >
+        <div className="flex flex-col w-full overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="truncate flex-1">
+              {menuOpenChatId === `rename-${chat.id}` ? (
+                <input
+                  type="text"
+                  value={chats[chat.id]?.name || ''}
+                  onChange={(e) => renameChat(chat.id, e.target.value)}
+                  onBlur={() => setMenuOpenChatId(null)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') setMenuOpenChatId(null);
+                  }}
+                  className="bg-transparent border-b border-cream-light text-cream-light focus:outline-none focus:border-cream w-full"
+                />
+              ) : (
+                <span className="truncate font-serif text-sm">{chat.name}</span>
+              )}
+            </div>
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpenChatId(menuOpenChatId === chat.id ? null : chat.id);
+                }}
+                className="text-cream-light hover:text-cream ml-2"
+              >
+                <MoreVertical size={16} />
+              </button>
+              {menuOpenChatId === chat.id && (
+                <div className="absolute right-0 mt-2 bg-wood-light text-cream-light rounded-lg shadow-lg z-10 w-32">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpenChatId(null);
+                      setTimeout(() => setMenuOpenChatId(`rename-${chat.id}`), 0);
+                    }}
+                    className="flex items-center px-3 py-2 hover:bg-wood text-sm w-full rounded-t-lg"
+                  >
+                    <Edit size={16} className="mr-2" /> Renomear
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteChat(chat.id);
+                    }}
+                    className="flex items-center px-3 py-2 text-red-500 hover:bg-red-700 hover:text-white text-sm w-full rounded-b-lg"
+                  >
+                    <Trash size={16} className="mr-2" /> Deletar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          {isAboutToDelete && days !== null && (
+            <span className="text-xs text-red-400 mt-1">
+              Será excluído em {days} {days === 1 ? 'dia' : 'dias'}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
@@ -652,103 +877,22 @@ const Chat = ({ onAuthModalToggle }) => {
                 {isSidebarCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />} {/* Ícone menor */}
               </Button>
             </div>
-            {!isSidebarCollapsed && (
-              <div className="flex-grow overflow-y-auto">
-                {Object.values(chats).map((chat) => (
-                  <div
-                    key={chat.id} // Adicionado `key` única para cada chat
-                    className={`p-4 cursor-pointer transition-all duration-300 ${
-                      chat.id === currentChatId
-                        ? 'bg-wood-light text-cream-light shadow-inner'
-                        : 'hover:bg-wood-light text-cream-light'
-                    } flex items-center justify-between rounded-lg mx-2 my-1`}
-                    onClick={() => setCurrentChatId(chat.id)}
-                    onDoubleClick={() => setMenuOpenChatId(`rename-${chat.id}`)} // Permite renomear ao clicar duas vezes
-                  >
-                    <div className="flex items-center space-x-2">
-                      {menuOpenChatId === `rename-${chat.id}` ? (
-                        <input
-                          type="text"
-                          value={chats[chat.id]?.name || ''} // Garantir que `name` existe
-                          onChange={(e) => renameChat(chat.id, e.target.value)}
-                          onBlur={() => setMenuOpenChatId(null)} // Salva ao perder o foco
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') setMenuOpenChatId(null); // Salva ao pressionar Enter
-                          }}
-                          className="bg-transparent border-b border-cream-light text-cream-light focus:outline-none focus:border-cream w-full"
-                        />
-                      ) : (
-                        <span className="truncate font-serif text-sm">{chat.name}</span>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMenuOpenChatId(menuOpenChatId === chat.id ? null : chat.id); // Alterna o menu
-                        }}
-                        className="text-cream-light hover:text-cream"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
-                      {menuOpenChatId === chat.id && (
-                        <div className="absolute right-0 mt-2 bg-wood-light text-cream-light rounded-lg shadow-lg z-10 w-32"> {/* Ajustado w-40 para w-32 */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenChatId(null); // Fecha o menu
-                              setTimeout(() => setMenuOpenChatId(`rename-${chat.id}`), 0); // Ativa o modo de edição
-                            }}
-                            className="flex items-center px-3 py-2 hover:bg-wood text-sm w-full rounded-t-lg" // Ajustado px-4 para px-3
-                          >
-                            <Edit size={16} className="mr-2" /> Renomear
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteChat(chat.id); // Exclui o chat
-                            }}
-                            className="flex items-center px-3 py-2 text-red-500 hover:bg-red-700 hover:text-white text-sm w-full rounded-b-lg" // Ajustado px-4 para px-3
-                          >
-                            <Trash size={16} className="mr-2" /> Deletar
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {!isSidebarCollapsed && (
-              <div className="m-4">
-                <Button
-                  onClick={createNewChat}
-                  className="w-full bg-wood-light text-wood-dark rounded-lg hover:bg-wood transition-all duration-300 mb-2"
-                >
-                  <Plus size={16} /> Novo Chat
-                </Button>
-                <Button
-                  onClick={deleteAllChats}
-                  className="w-full bg-red-500 text-white rounded-lg hover:bg-red-700 transition-all duration-300"
-                >
-                  <Trash size={16} /> Apagar Todos
-                </Button>
-              </div>
-            )}
+            {renderChatSidebar()}
           </div>
 
           {/* Chat Content */}
           <div className="flex-grow flex flex-col">
-          <div className="bg-wood p-4 text-cream-light flex items-center" style={{ paddingLeft: '3rem' }}> {/* Adicionado paddingLeft para deslocar */}
-          <img src="/img/episcopal_logo.png" alt="EclesIA Logo" className="h-11 mr-3" />
-                <div>
-                  <h2 className="font-serif text-lg text-cream">
-                    {chats[currentChatId]?.name || 'Novo Chat'} {/* Verificação de existência */}
-                  </h2>
-                  <p className="text-xs text-cream/80">Assistente da Igreja Episcopal Carismática</p>
+            <div className="bg-wood p-4 text-cream-light flex items-center" style={{ paddingLeft: '3rem' }}>
+              <img src="/img/episcopal_logo.png" alt="EclesIA Logo" className="h-11 mr-3" />
+              <div>
+                <h2 className="font-serif text-lg text-cream">
+                  {chats[currentChatId]?.name || 'Novo Chat'}
+                </h2>
+                <p className="text-xs text-cream/80">Assistente da Igreja Episcopal Carismática</p>
               </div>
             </div>
 
+            {/* Revertendo para o estilo original da área de mensagens */}
             <div className="flex-grow overflow-y-auto p-4">
               {messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
@@ -756,7 +900,7 @@ const Chat = ({ onAuthModalToggle }) => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Sugestões de perguntas */}
+            {/* Revertendo para o padding original das sugestões */}
             <div className={`p-4 ${!isSuggestionsVisible ? 'bg-transparent' : 'bg-cream-light'}`}>
               <button
                 type="button"
@@ -798,6 +942,7 @@ const Chat = ({ onAuthModalToggle }) => {
               )}
             </div>
 
+            {/* Revertendo para o padding original do formulário */}
             <form onSubmit={handleSendMessage} className="border-t border-wood/10 p-4 bg-cream-light">
               <div className="flex items-center space-x-2">
                 <Input
