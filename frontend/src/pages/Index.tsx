@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { BookOpen, MessageCircle, Home } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 const Index = ({ onAuthModalToggle }) => {
+  useEffect(() => {
+    AOS.init({
+      duration: 700,
+      once: true,
+      easing: 'ease-out-cubic',
+      offset: 40,
+    });
+  }, []);
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-cream-light via-cream to-cream-light">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
 
       {/* Hero Section */}
@@ -22,19 +33,34 @@ const Index = ({ onAuthModalToggle }) => {
         />
         <div className="absolute inset-0 bg-wood-darkest/40 z-1" />
         <div className="container mx-auto px-4 relative z-20">
-          <div className="md:w-1/2 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight text-cream">
-              Conversas Sagradas <br /> com <span className="text-cream-light">EclesIA</span>
+          <div className="md:w-1/2 animate-fade-in" data-aos="fade-up">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight text-cream drop-shadow">
+              Conversas Sagradas <br />
+              <span className="text-cream-light">EclesIA</span>
             </h1>
             <p className="text-lg md:text-xl text-cream-light mb-8 max-w-lg">
               Tire suas dúvidas sobre a Igreja Episcopal Carismática do Brasil e interaja com a Bíblia com nossa IA especializada.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Link to="/chat">
-                <Button className="btn-primary w-full sm:w-auto">Iniciar conversa</Button>
+                <Button
+                  className="w-full sm:w-auto py-3 px-8 rounded-xl font-semibold bg-gradient-to-r from-wood/90 via-wood-dark/90 to-wood/80 hover:from-wood-dark hover:to-wood transition-all duration-200 shadow-md group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
+                  }}
+                  data-aos="fade-right"
+                >
+                  Iniciar conversa
+                </Button>
               </Link>
               <Link to="/sobre">
-                <Button variant="outline" className="bg-cream/10 border-cream text-cream hover:bg-cream hover:text-wood-dark w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto py-3 px-8 rounded-xl font-semibold border-cream text-wood-dark bg-gradient-to-r from-cream/80 to-cream-light/90 hover:bg-cream hover:text-wood-dark transition-all duration-200 shadow group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  data-aos="fade-left"
+                >
                   Saiba mais
                 </Button>
               </Link>
@@ -44,9 +70,9 @@ const Index = ({ onAuthModalToggle }) => {
       </section>
 
       {/* Features and CTA Section */}
-      <section className="py-16 bg-gradient-to-b from-cream to-cream-light">
+      <section className="py-16 bg-gradient-to-b from-cream/90 via-cream-light/90 to-cream/90">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12" data-aos="fade-up">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif text-wood-dark">
               Descubra Nossos Recursos
             </h2>
@@ -57,43 +83,85 @@ const Index = ({ onAuthModalToggle }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Igreja */}
-            <div className="bg-[#f5e8dc] shadow-lg rounded-lg p-6 text-center hover:scale-105 transition-transform duration-300">
-              <Home className="w-12 h-12 text-wood-dark mx-auto mb-4" />
+            <div
+              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 transition-all duration-300 group
+                hover:-translate-y-2 hover:shadow-2xl active:-translate-y-2 active:shadow-2xl touch-manipulation"
+              style={{ willChange: 'transform' }} // Força o efeito de lift
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <Home className="w-12 h-12 text-wood-dark mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Igreja</h3>
               <p className="text-wood-darkest/70 mb-4">
                 Conheça mais sobre a Igreja Episcopal Carismática, sua história, missão e valores que guiam nossa fé.
               </p>
               <Link to="/sobre">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Saiba Mais</Button>
+                <Button
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood w-full py-2 rounded-lg transition-all duration-200 shadow group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
+                  }}
+                >
+                  Saiba Mais
+                </Button>
               </Link>
             </div>
 
             {/* Chatbot IA */}
-            <div className="bg-[#f5e8dc] shadow-lg rounded-lg p-6 text-center hover:scale-105 transition-transform duration-300">
-              <MessageCircle className="w-12 h-12 text-wood-dark mx-auto mb-4" />
+            <div
+              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 transition-all duration-300 group
+                hover:-translate-y-2 hover:shadow-2xl active:-translate-y-2 active:shadow-2xl touch-manipulation"
+              style={{ willChange: 'transform' }}
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <MessageCircle className="w-12 h-12 text-wood-dark mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Chatbot IA</h3>
               <p className="text-wood-darkest/70 mb-4">
                 Converse com nossa inteligência artificial para tirar dúvidas e aprender mais sobre a nossa igreja e tradições.
               </p>
               <Link to="/chat">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Converse Agora</Button>
+                <Button
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood w-full py-2 rounded-lg transition-all duration-200 shadow group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
+                  }}
+                >
+                  Converse Agora
+                </Button>
               </Link>
             </div>
 
             {/* Bíblia Interativa */}
-            <div className="bg-[#f5e8dc] shadow-lg rounded-lg p-6 text-center hover:scale-105 transition-transform duration-300">
-              <BookOpen className="w-12 h-12 text-wood-dark mx-auto mb-4" />
+            <div
+              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 transition-all duration-300 group
+                hover:-translate-y-2 hover:shadow-2xl active:-translate-y-2 active:shadow-2xl touch-manipulation"
+              style={{ willChange: 'transform' }}
+              data-aos="fade-up"
+              data-aos-delay="300"
+            >
+              <BookOpen className="w-12 h-12 text-wood-dark mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Bíblia Interativa</h3>
               <p className="text-wood-darkest/70 mb-4">
                 Explore a Bíblia de forma interativa, selecione capítulos e receba explicações sobre os textos em tempo real.
               </p>
               <Link to="/bible">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark w-full">Acessar Bíblia</Button>
+                <Button
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood w-full py-2 rounded-lg transition-all duration-200 shadow group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
+                  }}
+                >
+                  Acessar Bíblia
+                </Button>
               </Link>
             </div>
           </div>
 
-          <div className="text-center mt-20 mb-10 max-w-4xl mx-auto"> {/* Ajustado o espaçamento e largura */}
+          <div className="text-center mt-20 mb-10 max-w-4xl mx-auto" data-aos="fade-up" data-aos-delay="400">
             <h2 className="text-3xl text-wood-dark font-bold mb-6 font-serif">
               Pronto para explorar sua espiritualidade?
             </h2>
@@ -102,12 +170,26 @@ const Index = ({ onAuthModalToggle }) => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Link to="/chat">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark transition-all duration-300 w-full sm:w-auto px-8">
+                <Button
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood transition-all duration-200 w-full sm:w-auto px-8 py-3 rounded-xl shadow flex items-center gap-2 group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
+                  }}
+                >
+                  <MessageCircle size={20} className="mb-0.5 group-hover:animate-pulse" />
                   Iniciar Conversa
                 </Button>
               </Link>
               <Link to="/bible">
-                <Button className="bg-wood text-cream-light hover:bg-wood-dark transition-all duration-300 w-full sm:w-auto px-8">
+                <Button
+                  className="bg-gradient-to-r from-cream-light/90 to-cream/80 text-wood-dark hover:from-cream hover:to-cream-light transition-all duration-200 w-full sm:w-auto px-8 py-3 rounded-xl shadow flex items-center gap-2 group
+                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #f5e8dc 0%, #f5f5f0 100%)',
+                  }}
+                >
+                  <BookOpen size={20} className="mb-0.5" />
                   Acessar Bíblia
                 </Button>
               </Link>
