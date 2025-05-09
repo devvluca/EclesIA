@@ -28,6 +28,10 @@ const Bible = ({ onAuthModalToggle }) => {
   const API_URL = 'https://www.abibliadigital.com.br/api';
   const API_TOKEN = import.meta.env.VITE_BIBLIA_API_TOKEN; // Token da API
 
+  // Adicione estes estados para controlar o toque
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [touchMoved, setTouchMoved] = useState(false);
+
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -113,16 +117,27 @@ const Bible = ({ onAuthModalToggle }) => {
     }
   };
 
-  const handleVerseTouch = (verse, event) => {
-    setSelectedVerse(verse.number); // Define o versículo selecionado
-    setSelectedText(verse.text); // Define o texto do versículo selecionado
+  const handleVerseTouchStart = (event) => {
+    setTouchStartY(event.touches[0].clientY);
+    setTouchMoved(false);
+  };
 
-    // Calcula a posição do elemento tocado
-    const rect = event.target.getBoundingClientRect();
-    setBoxPosition({ x: rect.left, y: rect.bottom + window.scrollY }); // Posiciona a box logo abaixo do versículo
+  const handleVerseTouchMove = (event) => {
+    const deltaY = Math.abs(event.touches[0].clientY - touchStartY);
+    if (deltaY > 10) { // 10px de tolerância para considerar scroll
+      setTouchMoved(true);
+    }
+  };
 
-    setIsBoxVisible(true); // Exibe a box de pergunta da IA
-    setResponse(''); // Reseta a resposta da IA
+  const handleVerseTouchEnd = (verse, event) => {
+    if (!touchMoved) {
+      setSelectedVerse(verse.number);
+      setSelectedText(verse.text);
+      const rect = event.target.getBoundingClientRect();
+      setBoxPosition({ x: rect.left, y: rect.bottom + window.scrollY });
+      setIsBoxVisible(true);
+      setResponse('');
+    }
   };
 
   const addToHistory = (verse, response) => {
@@ -375,7 +390,9 @@ const Bible = ({ onAuthModalToggle }) => {
               {verses.map((verse) => (
                 <p
                   key={verse.number}
-                  onTouchStart={(e) => handleVerseTouch(verse, e)} // Passa o evento para calcular a posição
+                  onTouchStart={handleVerseTouchStart}
+                  onTouchMove={handleVerseTouchMove}
+                  onTouchEnd={(e) => handleVerseTouchEnd(verse, e)}
                   className={`relative ${
                     selectedVerse === verse.number ? 'border-dashed border-b-2 border-wood-dark' : ''
                   }`}
