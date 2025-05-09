@@ -57,6 +57,41 @@ const Chat = ({ onAuthModalToggle }) => {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // Modal de confirmação para apagar todos
+  const [showChatOptions, setShowChatOptions] = useState<{ chatId: string; x: number; y: number } | null>(null); // Para menu de opções no mobile
+  const [renameModal, setRenameModal] = useState<{ chatId: string; value: string } | null>(null); // Modal de renomear no mobile
+
+  // Estados para animação dos modais
+  const [modalAnim, setModalAnim] = useState(false);
+  const [chatOptionsAnim, setChatOptionsAnim] = useState(false);
+  const [renameAnim, setRenameAnim] = useState(false);
+
+  // Ativa animação ao abrir cada modal
+  useEffect(() => {
+    if (showDeleteAllModal) {
+      setModalAnim(false);
+      setTimeout(() => setModalAnim(true), 10);
+    } else {
+      setModalAnim(false);
+    }
+  }, [showDeleteAllModal]);
+
+  useEffect(() => {
+    if (showChatOptions) {
+      setChatOptionsAnim(false);
+      setTimeout(() => setChatOptionsAnim(true), 10);
+    } else {
+      setChatOptionsAnim(false);
+    }
+  }, [showChatOptions]);
+
+  useEffect(() => {
+    if (renameModal) {
+      setRenameAnim(false);
+      setTimeout(() => setRenameAnim(true), 10);
+    } else {
+      setRenameAnim(false);
+    }
+  }, [renameModal]);
 
   useEffect(() => {
     if (!loading && !user && !authModalOpened) {
@@ -704,6 +739,9 @@ const Chat = ({ onAuthModalToggle }) => {
     setIsSidebarCollapsed(true);
   };
 
+  // Função utilitária para detectar mobile
+  const isMobile = () => window.innerWidth <= 768;
+
   // Renderiza o sidebar com as seções de tempo
   const renderChatSidebar = () => {
     if (isSidebarCollapsed) return null;
@@ -798,6 +836,20 @@ const Chat = ({ onAuthModalToggle }) => {
       setIsSidebarCollapsed(true); // <-- Minimiza sidebar ao trocar de chat
     }
 
+    // Long press handler para mobile
+    let longPressTimer: NodeJS.Timeout;
+    const handleTouchStart = (e: React.TouchEvent) => {
+      if (!isMobile()) return;
+      const touch = e.touches[0];
+      longPressTimer = setTimeout(() => {
+        setShowChatOptions({ chatId: chat.id, x: touch.clientX, y: touch.clientY });
+      }, 500);
+    };
+    const handleTouchEnd = () => {
+      if (!isMobile()) return;
+      clearTimeout(longPressTimer);
+    };
+
     return (
       <div
         key={chat.id}
@@ -807,12 +859,15 @@ const Chat = ({ onAuthModalToggle }) => {
             : 'hover:bg-wood-light text-cream-light'
         } flex items-center justify-between rounded-lg my-1 ${isAboutToDelete ? 'border border-red-400/40' : ''}`}
         onClick={() => handleSelectChat(chat.id)}
-        onDoubleClick={() => setMenuOpenChatId(`rename-${chat.id}`)}
+        onDoubleClick={() => !isMobile() && setMenuOpenChatId(`rename-${chat.id}`)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="flex flex-col w-full overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="truncate flex-1">
-              {menuOpenChatId === `rename-${chat.id}` ? (
+              {/* Desktop: inline rename, Mobile: modal */}
+              {menuOpenChatId === `rename-${chat.id}` && !isMobile() ? (
                 <input
                   type="text"
                   value={chats[chat.id]?.name || ''}
@@ -827,26 +882,29 @@ const Chat = ({ onAuthModalToggle }) => {
                 <span className="truncate font-serif text-sm">{chat.name}</span>
               )}
             </div>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpenChatId(`rename-${chat.id}`);
-                }}
-                className="text-cream-light/70 hover:text-blue-400 transition-colors"
-              >
-                <Edit size={14} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteChat(chat.id);
-                }}
-                className="text-cream-light/70 hover:text-red-400 transition-colors"
-              >
-                <Trash size={14} />
-              </button>
-            </div>
+            {/* Ícones só aparecem no desktop */}
+            {!isMobile() && (
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenChatId(`rename-${chat.id}`);
+                  }}
+                  className="text-cream-light/70 hover:text-blue-400 transition-colors"
+                >
+                  <Edit size={14} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteChat(chat.id);
+                  }}
+                  className="text-cream-light/70 hover:text-red-400 transition-colors"
+                >
+                  <Trash size={14} />
+                </button>
+              </div>
+            )}
           </div>
           {isAboutToDelete && days !== null && (
             <span className="text-xs text-red-400 mt-1">
@@ -859,7 +917,7 @@ const Chat = ({ onAuthModalToggle }) => {
   };
 
   // Handlers para swipe lateral no mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStartMain = (e: React.TouchEvent) => {
     if (window.innerWidth > 768) return; // Só ativa no mobile/tablet
     setTouchStartX(e.touches[0].clientX);
     setTouchEndX(null);
@@ -870,7 +928,7 @@ const Chat = ({ onAuthModalToggle }) => {
     setTouchEndX(e.touches[0].clientX);
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEndMain = () => {
     if (window.innerWidth > 768 || touchStartX === null || touchEndX === null) return;
     const diff = touchEndX - touchStartX;
     if (diff > 60) {
@@ -887,9 +945,9 @@ const Chat = ({ onAuthModalToggle }) => {
   return (
     <div
       className="flex flex-col min-h-screen bg-cream-light"
-      onTouchStart={handleTouchStart}
+      onTouchStart={handleTouchStartMain}
       onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      onTouchEnd={handleTouchEndMain}
     >
       <Navbar onAuthModalToggle={onAuthModalToggle} />
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
@@ -1002,7 +1060,13 @@ const Chat = ({ onAuthModalToggle }) => {
       {/* Modal de confirmação para apagar todos os chats */}
       {showDeleteAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full border border-wood-light flex flex-col items-center">
+          <div
+            className={`bg-white rounded-xl shadow-xl p-8 max-w-sm w-full border border-wood-light flex flex-col items-center
+              transition-all duration-200
+              ${modalAnim ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}
+            `}
+            style={{ minWidth: 320 }}
+          >
             <h3 className="text-lg font-serif text-wood-dark mb-2">Apagar todas as conversas?</h3>
             <p className="text-wood-dark mb-6 text-center text-sm">
               Tem certeza que deseja excluir <b>todos os chats</b>? Esta ação não pode ser desfeita.
@@ -1021,6 +1085,97 @@ const Chat = ({ onAuthModalToggle }) => {
                 type="button"
               >
                 Apagar tudo
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Menu de opções do chat no mobile */}
+      {showChatOptions && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setShowChatOptions(null)}
+        >
+          <div
+            className={`bg-white rounded-xl shadow-xl p-6 max-w-xs w-full border border-wood-light flex flex-col items-center
+              transition-all duration-200
+              ${chatOptionsAnim ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}
+            `}
+            style={{ minWidth: 220 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-base font-serif text-wood-dark mb-4">Opções do chat</h3>
+            <Button
+              className="w-full mb-2 bg-wood-light text-wood-dark hover:bg-wood"
+              onClick={() => {
+                setRenameModal({ chatId: showChatOptions.chatId, value: chats[showChatOptions.chatId]?.name || '' });
+                setShowChatOptions(null);
+              }}
+              type="button"
+            >
+              Renomear
+            </Button>
+            <Button
+              className="w-full bg-red-500 text-white hover:bg-red-700"
+              onClick={() => {
+                deleteChat(showChatOptions.chatId);
+                setShowChatOptions(null);
+              }}
+              type="button"
+            >
+              Deletar
+            </Button>
+            <Button
+              className="w-full mt-2 bg-gray-200 text-gray-700 hover:bg-gray-300"
+              onClick={() => setShowChatOptions(null)}
+              type="button"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de renomear chat no mobile */}
+      {renameModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setRenameModal(null)}
+        >
+          <div
+            className={`bg-white rounded-xl shadow-xl p-6 max-w-xs w-full border border-wood-light flex flex-col items-center
+              transition-all duration-200
+              ${renameAnim ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}
+            `}
+            style={{ minWidth: 220 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-base font-serif text-wood-dark mb-4">Renomear chat</h3>
+            <input
+              type="text"
+              value={renameModal.value}
+              onChange={e => setRenameModal({ ...renameModal, value: e.target.value })}
+              className="w-full border border-wood-light rounded px-2 py-1 mb-4"
+              autoFocus
+            />
+            <div className="flex gap-2 w-full">
+              <Button
+                className="flex-1 bg-wood-light text-wood-dark hover:bg-wood"
+                onClick={() => {
+                  renameChat(renameModal.chatId, renameModal.value);
+                  setRenameModal(null);
+                }}
+                type="button"
+              >
+                Salvar
+              </Button>
+              <Button
+                className="flex-1 bg-gray-200 text-gray-700 hover:bg-gray-300"
+                onClick={() => setRenameModal(null)}
+                type="button"
+              >
+                Cancelar
               </Button>
             </div>
           </div>
