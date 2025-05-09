@@ -25,16 +25,40 @@ const Footer = () => {
             <h3 className="text-cream-light text-xl mb-4 font-serif">Links úteis</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-cream/80 hover:text-cream transition-colors">Início</Link>
+                <Link
+                  to="/"
+                  className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  Início
+                </Link>
               </li>
               <li>
-                <Link to="/sobre" className="text-cream/80 hover:text-cream transition-colors">Sobre nós</Link>
+                <Link
+                  to="/sobre"
+                  className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  Sobre nós
+                </Link>
               </li>
               <li>
-                <Link to="/chat" className="text-cream/80 hover:text-cream transition-colors">Conversar com a IA</Link>
+                <Link
+                  to="/chat"
+                  className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  Conversar com a IA
+                </Link>
               </li>
               <li>
-                <Link to="/bible" className="text-cream/80 hover:text-cream transition-colors">Bíblia</Link>
+                <Link
+                  to="/bible"
+                  className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  Bíblia
+                </Link>
               </li>
             </ul>
           </div>
@@ -43,8 +67,7 @@ const Footer = () => {
           <div>
             <h3 className="text-cream-light text-xl mb-4 font-serif">Relatar um problema</h3>
             <p className="text-cream/80 mb-3">
-              Encontrou um bug <br />
-              ou tem uma sugestão? Entre em contato:
+              Encontrou um bug ou tem uma sugestão? <br /> Entre em contato:
             </p>
             <ul className="space-y-3">
               <li>
