@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Square, Plus, ChevronLeft, ChevronRight, MoreVertical, Edit, Trash, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-react'; // Adicionado AlertTriangle
+import { Send, Square, Plus, ChevronLeft, ChevronRight, Trash, ChevronUp, ChevronDown, AlertTriangle, Edit } from 'lucide-react'; // Adicionado Edit
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 
@@ -269,15 +269,6 @@ const Chat = ({ onAuthModalToggle }) => {
         variant: 'destructive',
       });
     }
-  };
-
-  const handleMenuOption = (chatId, option) => {
-    if (option === 'rename') {
-      setMenuOpenChatId(chatId); // Abre o modo de edição diretamente
-    } else if (option === 'delete') {
-      deleteChat(chatId);
-    }
-    setMenuOpenChatId(null); // Fecha o menu após a ação
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -798,7 +789,6 @@ const Chat = ({ onAuthModalToggle }) => {
       if (id === currentChatId) return; // If the selected chat is already active, do nothing
       setCurrentChatId(id); // Update the current chat ID
       setMessages(chats[id]?.messages || []); // Load the messages for the selected chat
-      setMenuOpenChatId(null); // Close any open menus
       setIsSidebarCollapsed(true); // <-- Minimiza sidebar ao trocar de chat
     }
 
@@ -831,39 +821,25 @@ const Chat = ({ onAuthModalToggle }) => {
                 <span className="truncate font-serif text-sm">{chat.name}</span>
               )}
             </div>
-            <div className="relative">
+            <div className="flex items-center space-x-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setMenuOpenChatId(menuOpenChatId === chat.id ? null : chat.id);
+                  setMenuOpenChatId(`rename-${chat.id}`);
                 }}
-                className="text-cream-light hover:text-cream ml-2"
+                className="text-cream-light/70 hover:text-blue-400 transition-colors"
               >
-                <MoreVertical size={16} />
+                <Edit size={14} />
               </button>
-              {menuOpenChatId === chat.id && (
-                <div className="absolute right-0 mt-2 bg-wood-light text-cream-light rounded-lg shadow-lg z-10 w-32">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuOpenChatId(null);
-                      setTimeout(() => setMenuOpenChatId(`rename-${chat.id}`), 0);
-                    }}
-                    className="flex items-center px-3 py-2 hover:bg-wood text-sm w-full rounded-t-lg"
-                  >
-                    <Edit size={16} className="mr-2" /> Renomear
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteChat(chat.id);
-                    }}
-                    className="flex items-center px-3 py-2 text-red-500 hover:bg-red-700 hover:text-white text-sm w-full rounded-b-lg"
-                  >
-                    <Trash size={16} className="mr-2" /> Deletar
-                  </button>
-                </div>
-              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteChat(chat.id);
+                }}
+                className="text-cream-light/70 hover:text-red-400 transition-colors"
+              >
+                <Trash size={14} />
+              </button>
             </div>
           </div>
           {isAboutToDelete && days !== null && (
