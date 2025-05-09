@@ -56,6 +56,7 @@ const Chat = ({ onAuthModalToggle }) => {
   const { toast } = useToast();
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // Modal de confirmação para apagar todos
 
   useEffect(() => {
     if (!loading && !user && !authModalOpened) {
@@ -533,38 +534,43 @@ const Chat = ({ onAuthModalToggle }) => {
 
   const deleteAllChats = async () => {
     if (!user) return;
-    
-    if (window.confirm('Tem certeza que deseja apagar todos os chats?')) {
-      try {
-        // Primeiro exclui todas as mensagens dos chats do usuário
-        const { error: messagesError } = await supabase
-          .from('messages')
-          .delete()
-          .in('chat_id', Object.keys(chats));
-          
-        if (messagesError) throw messagesError;
-        
-        // Depois exclui todos os chats do usuário
-        const { error: chatsError } = await supabase
-          .from('chats')
-          .delete()
-          .eq('user_id', user.id);
-          
-        if (chatsError) throw chatsError;
-        
-        // Atualiza o estado local
-        setChats({});
-        // Cria um novo chat vazio após apagar todos
-        const newChatId = await createNewChat();
-        setCurrentChatId(newChatId);
-      } catch (error) {
-        console.error('Erro ao excluir todos os chats:', error);
-        toast({
-          title: 'Erro ao excluir conversas',
-          description: 'Não foi possível excluir todas as conversas. Tente novamente.',
-          variant: 'destructive',
-        });
-      }
+
+    // Removido window.confirm, agora só mostra o modal
+    setShowDeleteAllModal(true);
+  };
+
+  const confirmDeleteAllChats = async () => {
+    try {
+      // Primeiro exclui todas as mensagens dos chats do usuário
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .in('chat_id', Object.keys(chats));
+  
+      if (messagesError) throw messagesError;
+  
+      // Depois exclui todos os chats do usuário
+      const { error: chatsError } = await supabase
+        .from('chats')
+        .delete()
+        .eq('user_id', user.id);
+  
+      if (chatsError) throw chatsError;
+  
+      // Atualiza o estado local
+      setChats({});
+      // Cria um novo chat vazio após apagar todos
+      const newChatId = await createNewChat();
+      setCurrentChatId(newChatId);
+      setShowDeleteAllModal(false);
+    } catch (error) {
+      console.error('Erro ao excluir todos os chats:', error);
+      toast({
+        title: 'Erro ao excluir conversas',
+        description: 'Não foi possível excluir todas as conversas. Tente novamente.',
+        variant: 'destructive',
+      });
+      setShowDeleteAllModal(false);
     }
   };
 
@@ -755,7 +761,7 @@ const Chat = ({ onAuthModalToggle }) => {
               <Plus size={16} /> Novo Chat
             </Button>
             <Button
-              onClick={deleteAllChats}
+              onClick={() => setShowDeleteAllModal(true)}
               className="w-full bg-red-500 text-white rounded-lg hover:bg-red-700 transition-all duration-300"
             >
               <Trash size={16} /> Apagar Todos
@@ -992,6 +998,34 @@ const Chat = ({ onAuthModalToggle }) => {
         </div>
       </main>
       <Footer />
+
+      {/* Modal de confirmação para apagar todos os chats */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full border border-wood-light flex flex-col items-center">
+            <h3 className="text-lg font-serif text-wood-dark mb-2">Apagar todas as conversas?</h3>
+            <p className="text-wood-dark mb-6 text-center text-sm">
+              Tem certeza que deseja excluir <b>todos os chats</b>? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 w-full">
+              <Button
+                className="flex-1 bg-wood-light text-wood-dark hover:bg-wood"
+                onClick={() => setShowDeleteAllModal(false)}
+                type="button"
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 bg-red-500 text-white hover:bg-red-700"
+                onClick={confirmDeleteAllChats}
+                type="button"
+              >
+                Apagar tudo
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
