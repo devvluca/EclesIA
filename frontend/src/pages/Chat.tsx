@@ -54,6 +54,8 @@ const Chat = ({ onAuthModalToggle }) => {
   const [isDbLoading, setIsDbLoading] = useState(true); // Estado para controlar o carregamento inicial do banco de dados
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !user && !authModalOpened) {
@@ -699,6 +701,12 @@ const Chat = ({ onAuthModalToggle }) => {
     return 50 - diffDays; // 50 dias antes da exclusão automática
   };
 
+  // Handler para criar novo chat e recolher a sidebar
+  const handleCreateNewChat = async () => {
+    await createNewChat();
+    setIsSidebarCollapsed(true);
+  };
+
   // Renderiza o sidebar com as seções de tempo
   const renderChatSidebar = () => {
     if (isSidebarCollapsed) return null;
@@ -750,7 +758,7 @@ const Chat = ({ onAuthModalToggle }) => {
           
           <div className="m-4">
             <Button
-              onClick={createNewChat}
+              onClick={handleCreateNewChat}
               className="w-full bg-wood-light text-wood-dark rounded-lg hover:bg-wood transition-all duration-300 mb-2"
             >
               <Plus size={16} /> Novo Chat
@@ -786,6 +794,14 @@ const Chat = ({ onAuthModalToggle }) => {
   const renderChatItem = (chat: { id: string; name: string; messages: Message[]; created_at?: string }, isAboutToDelete = false) => {
     const days = chat.created_at ? getDaysBeforeDeletion(chat.created_at) : null;
     
+    function handleSelectChat(id: string): void {
+      if (id === currentChatId) return; // If the selected chat is already active, do nothing
+      setCurrentChatId(id); // Update the current chat ID
+      setMessages(chats[id]?.messages || []); // Load the messages for the selected chat
+      setMenuOpenChatId(null); // Close any open menus
+      setIsSidebarCollapsed(true); // <-- Minimiza sidebar ao trocar de chat
+    }
+
     return (
       <div
         key={chat.id}
@@ -794,7 +810,7 @@ const Chat = ({ onAuthModalToggle }) => {
             ? 'bg-wood-light text-cream-light shadow-inner'
             : 'hover:bg-wood-light text-cream-light'
         } flex items-center justify-between rounded-lg my-1 ${isAboutToDelete ? 'border border-red-400/40' : ''}`}
-        onClick={() => setCurrentChatId(chat.id)}
+        onClick={() => handleSelectChat(chat.id)}
         onDoubleClick={() => setMenuOpenChatId(`rename-${chat.id}`)}
       >
         <div className="flex flex-col w-full overflow-hidden">
@@ -860,8 +876,39 @@ const Chat = ({ onAuthModalToggle }) => {
     );
   };
 
+  // Handlers para swipe lateral no mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.innerWidth > 768) return; // Só ativa no mobile/tablet
+    setTouchStartX(e.touches[0].clientX);
+    setTouchEndX(null);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (window.innerWidth > 768) return;
+    setTouchEndX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (window.innerWidth > 768 || touchStartX === null || touchEndX === null) return;
+    const diff = touchEndX - touchStartX;
+    if (diff > 60) {
+      // Swipe para direita: abrir sidebar
+      setIsSidebarCollapsed(false);
+    } else if (diff < -60) {
+      // Swipe para esquerda: fechar sidebar
+      setIsSidebarCollapsed(true);
+    }
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-cream-light">
+    <div
+      className="flex flex-col min-h-screen bg-cream-light"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <Navbar onAuthModalToggle={onAuthModalToggle} />
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-150px)] flex">
@@ -870,6 +917,7 @@ const Chat = ({ onAuthModalToggle }) => {
             className={`bg-wood text-cream-light flex flex-col transition-all duration-300 ${
               isSidebarCollapsed ? 'w-0' : 'w-64' // Ajusta a largura para 11 quando recolhida
             }`}
+            style={{ minWidth: isSidebarCollapsed ? 0 : undefined }}
           >
             <div className="relative p-4 flex justify-between items-center"> {/* Adicionada posição relativa */}
               {!isSidebarCollapsed && <h2 className="text-lg font-serif text-lg text-cream/100">Histórico</h2>} 
