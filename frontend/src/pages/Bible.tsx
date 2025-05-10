@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext'; // Adicione este import
+import BottomNavBar from '@/components/BottomNavBar';
 
 const Bible = ({ onAuthModalToggle }) => {
   const { user, loading } = useAuth(); // Adicione esta linha
@@ -24,6 +25,7 @@ const Bible = ({ onAuthModalToggle }) => {
   const [history, setHistory] = useState([]); // Histórico de consultas
   const [isHistoryVisible, setIsHistoryVisible] = useState(false); // Controle para exibir a box de histórico
   const [selectedVerse, setSelectedVerse] = useState(null); // Versículo selecionado no celular
+  const [isPWA, setIsPWA] = useState(false);
 
   const API_URL = 'https://www.abibliadigital.com.br/api';
   const API_TOKEN = import.meta.env.VITE_BIBLIA_API_TOKEN; // Token da API
@@ -68,6 +70,13 @@ const Bible = ({ onAuthModalToggle }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
+  }, []);
+
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
   }, []);
 
   const fetchChapter = async (bookAbbrev, chapter) => {
@@ -239,7 +248,7 @@ const Bible = ({ onAuthModalToggle }) => {
             </Button>
           </div>
         </main>
-        <Footer />
+        {!isPWA && <Footer />}
       </div>
     );
   }
@@ -451,7 +460,7 @@ const Bible = ({ onAuthModalToggle }) => {
           </div>
         )}
       </main>
-      <Footer />
+      {!isPWA && <Footer />}
     </div>
   );
 };

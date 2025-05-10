@@ -64,6 +64,7 @@ const Chat = ({ onAuthModalToggle }) => {
   const [modalAnim, setModalAnim] = useState(false);
   const [chatOptionsAnim, setChatOptionsAnim] = useState(false);
   const [renameAnim, setRenameAnim] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
 
   // Ativa animação ao abrir cada modal
   useEffect(() => {
@@ -192,6 +193,13 @@ const Chat = ({ onAuthModalToggle }) => {
       return () => clearInterval(typingInterval);
     }
   }, [currentChatId, chats]);
+
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
+  }, []);
 
   const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
@@ -646,7 +654,7 @@ const Chat = ({ onAuthModalToggle }) => {
             </Button>
           </div>
         </main>
-        <Footer />
+        {!isPWA && <Footer />}
       </div>
     );
   }
@@ -665,7 +673,7 @@ const Chat = ({ onAuthModalToggle }) => {
             </div>
           </div>
         </main>
-        <Footer />
+        {!isPWA && <Footer />}
       </div>
     );
   }
@@ -1055,7 +1063,7 @@ const Chat = ({ onAuthModalToggle }) => {
           </div>
         </div>
       </main>
-      <Footer />
+      {!isPWA && <Footer />}
 
       {/* Modal de confirmação para apagar todos os chats */}
       {showDeleteAllModal && (
