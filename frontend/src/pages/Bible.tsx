@@ -33,6 +33,9 @@ const Bible = ({ onAuthModalToggle }) => {
   // Adicione estes estados para controlar o toque
   const [touchStartY, setTouchStartY] = useState(0);
   const [touchMoved, setTouchMoved] = useState(false);
+  // Novo: estados para swipe horizontal de capítulos
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -149,6 +152,35 @@ const Bible = ({ onAuthModalToggle }) => {
     }
   };
 
+  // Novo: handlers para swipe horizontal (capítulos)
+  const handleMainTouchStart = (event) => {
+    if (event.touches && event.touches.length === 1) {
+      setTouchStartX(event.touches[0].clientX);
+      setTouchEndX(event.touches[0].clientX);
+    }
+  };
+
+  const handleMainTouchMove = (event) => {
+    if (event.touches && event.touches.length === 1) {
+      setTouchEndX(event.touches[0].clientX);
+    }
+  };
+
+  const handleMainTouchEnd = () => {
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 40) { // threshold para swipe
+      if (diff < 0) {
+        // Swipe para esquerda: próximo capítulo
+        handleChapterChange(1);
+      } else if (diff > 0) {
+        // Swipe para direita: capítulo anterior
+        handleChapterChange(-1);
+      }
+    }
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
   const addToHistory = (verse, response) => {
     setHistory((prev) => [...prev, { verse, response }]);
   };
@@ -254,7 +286,13 @@ const Bible = ({ onAuthModalToggle }) => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream-light" onMouseUp={(e) => handleTextSelection(e.nativeEvent)}>
+    <div
+      className="flex flex-col min-h-screen bg-cream-light"
+      onMouseUp={(e) => handleTextSelection(e.nativeEvent)}
+      onTouchStart={handleMainTouchStart}
+      onTouchMove={handleMainTouchMove}
+      onTouchEnd={handleMainTouchEnd}
+    >
       <Navbar onAuthModalToggle={onAuthModalToggle} />
       <main className="flex-grow pt-[calc(4rem+4px)]">
         {/* Seletor de livros, capítulos e navegação */}
@@ -265,13 +303,13 @@ const Bible = ({ onAuthModalToggle }) => {
                 setShowSelector(!showSelector);
                 setIsSelectingBook(true); // Começa com a seleção de livros
               }}
-              className="p-1 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-xs sm:text-base" // Ajustado para largura menor em mobile
+              className="p-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/60 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200 text-xs sm:text-sm sm:hidden" // Ajustado para largura menor em mobile
             >
               {selectedBook ? selectedBook.name : 'Selecione um livro'}
             </button>
             <button
               onClick={() => setIsHistoryVisible(!isHistoryVisible)}
-              className="p-1 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-xs sm:text-sm sm:hidden" // Botão "Histórico" movido para a direita no mobile
+              className="p-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/60 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200 text-xs sm:text-sm sm:hidden" // Botão "Histórico" movido para a direita no mobile
             >
               Histórico
             </button>
@@ -299,7 +337,7 @@ const Bible = ({ onAuthModalToggle }) => {
                       <button
                         key={book.abbrev.pt}
                         onClick={() => handleBookSelect(book)}
-                        className="p-3 bg-wood text-cream-light rounded-lg hover:bg-wood-dark text-xs sm:text-sm text-center truncate" // Texto menor em telas pequenas
+                        className="w-full sm:w-auto py-1.5 px-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200" // Texto menor em telas pequenas
                         style={{ minHeight: '3rem' }}
                       >
                         {book.name}
@@ -309,7 +347,7 @@ const Bible = ({ onAuthModalToggle }) => {
                         <button
                           key={chapter}
                           onClick={() => handleChapterSelect(chapter)}
-                          className={`p-3 rounded-lg text-xs sm:text-sm text-center ${
+                          className={`w-full sm:w-auto py-1.5 px-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200 ${
                             chapter === selectedChapter
                               ? 'bg-wood-dark text-cream-light'
                               : 'bg-wood text-cream-light hover:bg-wood-dark'
@@ -322,7 +360,7 @@ const Bible = ({ onAuthModalToggle }) => {
               </div>
               <Button
                 onClick={() => setShowSelector(false)}
-                className="mt-4 bg-wood text-cream-light hover:bg-wood-dark w-full"
+                className="mt-4 bg-wood text-cream-light font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/50 to-wood-dark/80 hover:bg-wood-dark w-full"
               >
                 Fechar
               </Button>
@@ -352,14 +390,23 @@ const Bible = ({ onAuthModalToggle }) => {
               <ChevronRight />
             </button>
           </div>
-          <div className="absolute right-4 flex items-center space-x-4 hidden sm:flex"> {/* Esconde "Versão: NVI" no mobile */}
-            <span className="text-xs sm:text-sm text-cream-light">Versão: NVI</span>
+          <div className="absolute left-4 right-4 flex items-center space-x-4 hidden sm:flex"> {/* Esconde "Versão: NVI" no mobile */}
+            <button
+              onClick={() => {
+                setShowSelector(!showSelector);
+                setIsSelectingBook(true); // Começa com a seleção de livros
+              }}
+              className="w-full sm:w-auto py-1.5 px-4 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200"
+            >
+              {selectedBook ? selectedBook.name : 'Selecione um livro'}
+            </button>
             <button
               onClick={() => setIsHistoryVisible(!isHistoryVisible)}
-              className="p-2 bg-cream-light text-wood-dark rounded-lg hover:bg-wood-light text-xs sm:text-sm" // Texto menor em telas pequenas
+              className="absolute right-4 w-full sm:w-auto py-1.5 px-4 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200"
             >
               Histórico
             </button>
+          <span className="text-xs sm:text-sm text-cream-light">Versão: NVI</span>
           </div>
         </div>
 

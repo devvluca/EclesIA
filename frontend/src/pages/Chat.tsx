@@ -18,9 +18,9 @@ const allSuggestedQuestions = [
   "Quais os sacramentos da Igreja Episcopal?",
   "O que é o batismo na IECB?",
   "Qual a história da Igreja Anglicana?",
-  "O que significa ser um cristão anglicano?",
-  "Como funciona a liturgia na IECB?",
-  "Quais são os princípios da tradição Anglicana?",
+  "O que significa ser um cristão?",
+  "Como funciona a liturgia na Episcopal?",
+  "Quais são os princípios da tradição cristã?",
   "O que é a Eucaristia?",
   "Como posso participar da IECB?",
   "Qual é o papel da Bíblia na vida cristã?",
@@ -34,6 +34,7 @@ const allSuggestedQuestions = [
   "Como a Bíblia pode me ajudar no dia a dia?",
   "O que significa ser salvo?",
   "Qual é o propósito da vida segundo a Bíblia?",
+  "Crente pode ir na balada?",
 ];
 
 const Chat = ({ onAuthModalToggle }) => {
