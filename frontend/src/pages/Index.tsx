@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { BookOpen, MessageCircle, Home } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -231,7 +230,6 @@ const Index = ({ onAuthModalToggle }) => {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };

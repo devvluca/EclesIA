@@ -1,17 +1,22 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, BookOpen, User } from 'lucide-react';
+import { Home, MessageCircle, BookOpen, User, Settings } from 'lucide-react';
 
-const navItems = [
-  { to: '/', label: 'Home', icon: <Home /> },
-  { to: '/chat', label: 'Chat', icon: <MessageCircle /> },
-  { to: '/bible', label: 'Bíblia', icon: <BookOpen /> },
-  { to: '/account', label: 'Conta', icon: <User /> },
-];
-
-export default function BottomNavBar() {
+export default function BottomNavBar({ isPWA }: { isPWA: boolean }) {
   const location = useLocation();
+  const navItems = [
+    { to: '/', label: 'Home', icon: <Home /> },
+    { to: '/chat', label: 'Chat', icon: <MessageCircle /> },
+    { to: '/bible', label: 'Bíblia', icon: <BookOpen /> },
+    isPWA
+      ? { to: '/settings', label: 'Configurações', icon: <Settings /> }
+      : { to: '/conta', label: 'Conta', icon: <User /> },
+  ];
+
   return (
-    <nav className="fixed left-0 right-0 bottom-4 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-center h-16 shadow-lg md:hidden rounded-xl mx-2">
+    <nav
+      className="fixed left-0 right-0 bottom-0 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-center h-16 shadow-lg md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
+    >
       {navItems.map(item => (
         <Link
           key={item.to}

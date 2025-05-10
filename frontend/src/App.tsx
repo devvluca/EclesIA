@@ -10,6 +10,7 @@ import Account from '@/pages/Account';
 import Welcome from '@/pages/Welcome';
 import InstallPrompt from '@/components/InstallPrompt';
 import BottomNavBar from '@/components/BottomNavBar';
+import Footer from '@/components/Footer';
 import { AuthProvider } from './context/AuthContext';
 
 const App = () => {
@@ -41,7 +42,8 @@ const App = () => {
           <Route path="/welcome" element={<Welcome />} />
         </Routes>
         <InstallPrompt />
-        {isPWA && <BottomNavBar />}
+        {!isPWA && <Footer />}
+        {isPWA && <BottomNavBar isPWA={isPWA} />}
       </Router>
     </AuthProvider>
   );
