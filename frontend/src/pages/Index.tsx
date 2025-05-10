@@ -232,7 +232,6 @@ const Index = ({ onAuthModalToggle }) => {
       </section>
 
       <Footer />
-      {isPWA && <BottomNavBar />}
     </div>
   );
 };
