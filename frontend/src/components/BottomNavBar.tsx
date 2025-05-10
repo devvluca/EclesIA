@@ -12,15 +12,20 @@ export default function BottomNavBar({ isPWA }: { isPWA: boolean }) {
       : { to: '/conta', label: 'Conta', icon: <User /> },
   ];
 
+  const handleNavClick = () => {
+    window.scrollTo(0, 0);
+  };
+
   return (
     <nav
-      className="fixed left-0 right-0 bottom-0 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-center h-16 shadow-lg md:hidden"
+      className="fixed left-0 right-0 bottom-4 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-center h-16 shadow-lg md:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
     >
       {navItems.map(item => (
         <Link
           key={item.to}
           to={item.to}
+          onClick={handleNavClick}
           className={`flex flex-col items-center justify-center text-xs font-medium transition-colors duration-150 ${
             location.pathname === item.to
               ? 'text-wood-dark'

@@ -12,6 +12,7 @@ import InstallPrompt from '@/components/InstallPrompt';
 import BottomNavBar from '@/components/BottomNavBar';
 import Footer from '@/components/Footer';
 import { AuthProvider } from './context/AuthContext';
+import Settings from '@/pages/Settings';
 
 const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -40,6 +41,7 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/account" element={<Account />} />
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
         <InstallPrompt />
         {!isPWA && <Footer />}
