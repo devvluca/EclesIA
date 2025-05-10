@@ -1,9 +1,10 @@
 # ✝️ EclesIA — Inteligência Artificial Eclesiástica
 
-![React.js](https://img.shields.io/badge/React.js-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![React.js](https://img.shields.io/badge/React.js-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Chatbot IA](https://img.shields.io/badge/Chatbot_IA-6B46C1?style=for-the-badge&logo=openai&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 
 **EclesIA** é um aplicativo web que une fé e tecnologia, oferecendo um **chatbot inteligente treinado para responder perguntas sobre a Igreja Episcopal Carismática do Brasil** e suas raízes anglicanas. Feito com carinho, propósito e uma paleta marrom madeira que remete à tradição, acolhimento e espiritualidade.
