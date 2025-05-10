@@ -1,12 +1,42 @@
-import { MessageSquare, Mail } from 'lucide-react';
+import React from 'react';
+import { MessageSquare, Mail, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Settings() {
+  const { user, signOut } = useAuth();
+
+  // Tenta pegar o primeiro nome do usuário
+  const fullName =
+    user?.user_metadata?.name ||
+    user?.name ||
+    user?.email?.split('@')[0] ||
+    'Usuário';
+  const firstName = fullName.split(' ')[0];
+
   return (
     <div className="max-w-md mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-6 text-wood-dark">Configurações</h1>
-      {/* ...outras opções de configurações se houver... */}
+      {/* Header do usuário */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="w-20 h-20 rounded-full bg-wood-dark flex items-center justify-center mb-3 overflow-hidden">
+          {user?.avatar ? (
+            <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <User className="w-10 h-10 text-cream-light" />
+          )}
+        </div>
+        <div className="text-xl font-bold text-wood-dark mb-1">{firstName}</div>
+        <div className="text-wood-dark/70 text-sm mb-3">{user?.email}</div>
+        <button
+          onClick={signOut}
+          className="flex items-center gap-2 px-4 py-2 bg-wood-dark text-cream-light rounded-lg font-medium hover:bg-wood-dark/90 transition-colors"
+        >
+          <LogOut size={18} />
+          Sair
+        </button>
+      </div>
 
       <div className="space-y-8">
+        {/* Relatar um problema */}
         <div>
           <h3 className="text-cream-light text-xl mb-4 font-serif bg-wood-dark px-4 py-2 rounded-t-lg">Relatar um problema</h3>
           <div className="bg-[#f5e8dc]/80 rounded-b-lg px-4 py-4">
@@ -29,6 +59,7 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Contato */}
         <div>
           <h3 className="text-cream-light text-xl mb-4 font-serif bg-wood-dark px-4 py-2 rounded-t-lg">Contato</h3>
           <div className="bg-[#f5e8dc]/80 rounded-b-lg px-4 py-4">

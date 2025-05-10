@@ -18,8 +18,8 @@ export default function BottomNavBar({ isPWA }: { isPWA: boolean }) {
 
   return (
     <nav
-      className="fixed left-0 right-0 bottom-4 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-center h-16 shadow-lg md:hidden"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
+      className="fixed left-0 right-0 bottom-0 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-start h-20 shadow-lg md:hidden"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 16px)' }}
     >
       {navItems.map(item => (
         <Link
