@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -6,8 +6,13 @@ import Footer from '@/components/Footer';
 import { BookOpen, MessageCircle, Home } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import BottomNavBar from '@/components/BottomNavBar';
 
 const Index = ({ onAuthModalToggle }) => {
+  // Estados para controlar o hover de cada box
+  const [hoveredBox, setHoveredBox] = useState<number | null>(null);
+  const [isPWA, setIsPWA] = useState(false);
+
   useEffect(() => {
     AOS.init({
       duration: 700,
@@ -15,6 +20,12 @@ const Index = ({ onAuthModalToggle }) => {
       easing: 'ease-out-cubic',
       offset: 40,
     });
+
+    // Detecta modo standalone (PWA)
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
   }, []);
 
   return (
@@ -44,8 +55,9 @@ const Index = ({ onAuthModalToggle }) => {
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Link to="/chat">
                 <Button
-                  className="w-full sm:w-auto py-3 px-8 rounded-xl font-semibold bg-gradient-to-r from-wood/90 via-wood-dark/90 to-wood/80 hover:from-wood-dark hover:to-wood transition-all duration-200 shadow-md group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="w-full sm:w-auto py-3 px-8 rounded-xl font-semibold bg-gradient-to-r from-wood/90 via-wood-dark/90 to-wood/80 shadow-xl group
+                    hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg
+                    transition-all duration-200"
                   style={{
                     backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
                   }}
@@ -57,8 +69,9 @@ const Index = ({ onAuthModalToggle }) => {
               <Link to="/sobre">
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto py-3 px-8 rounded-xl font-semibold border-cream text-wood-dark bg-gradient-to-r from-cream/80 to-cream-light/90 hover:bg-cream hover:text-wood-dark transition-all duration-200 shadow group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="w-full sm:w-auto py-3 px-8 rounded-xl font-semibold border-cream text-wood-dark bg-gradient-to-r from-cream/80 to-cream-light/90 shadow-xl group
+                    hover:bg-cream hover:text-wood-dark hover:shadow-2xl focus:bg-cream focus:text-wood-dark focus:shadow-2xl active:bg-cream-light active:shadow-lg
+                    transition-all duration-200"
                   data-aos="fade-left"
                 >
                   Saiba mais
@@ -84,21 +97,27 @@ const Index = ({ onAuthModalToggle }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Igreja */}
             <div
-              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 transition-all duration-300 group
-                hover:-translate-y-2 hover:shadow-2xl active:-translate-y-2 active:shadow-2xl touch-manipulation"
-              style={{ willChange: 'transform' }} // Força o efeito de lift
+              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 group touch-manipulation"
+              style={{
+                willChange: 'transform',
+                transform: hoveredBox === 0 ? 'scale(1.08)' : 'scale(1)',
+                zIndex: hoveredBox === 0 ? 2 : 1,
+              }}
+              onMouseEnter={() => setHoveredBox(0)}
+              onMouseLeave={() => setHoveredBox(null)}
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              <Home className="w-12 h-12 text-wood-dark mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
+              <Home className="w-12 h-12 text-wood-dark mx-auto mb-4" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Igreja</h3>
               <p className="text-wood-darkest/70 mb-4">
                 Conheça mais sobre a Igreja Episcopal Carismática, sua história, missão e valores que guiam nossa fé.
               </p>
               <Link to="/sobre">
                 <Button
-                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood w-full py-2 rounded-lg transition-all duration-200 shadow group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light w-full py-2 rounded-lg shadow group
+                    hover:brightness-105 hover:shadow-lg focus:brightness-105 focus:shadow-lg active:brightness-95 active:shadow
+                    transition-all duration-200"
                   style={{
                     backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
                   }}
@@ -110,21 +129,27 @@ const Index = ({ onAuthModalToggle }) => {
 
             {/* Chatbot IA */}
             <div
-              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 transition-all duration-300 group
-                hover:-translate-y-2 hover:shadow-2xl active:-translate-y-2 active:shadow-2xl touch-manipulation"
-              style={{ willChange: 'transform' }}
+              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 group touch-manipulation"
+              style={{
+                willChange: 'transform',
+                transform: hoveredBox === 1 ? 'scale(1.08)' : 'scale(1)',
+                zIndex: hoveredBox === 1 ? 2 : 1,
+              }}
+              onMouseEnter={() => setHoveredBox(1)}
+              onMouseLeave={() => setHoveredBox(null)}
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <MessageCircle className="w-12 h-12 text-wood-dark mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
+              <MessageCircle className="w-12 h-12 text-wood-dark mx-auto mb-4" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Chatbot IA</h3>
               <p className="text-wood-darkest/70 mb-4">
                 Converse com nossa inteligência artificial para tirar dúvidas e aprender mais sobre a nossa igreja e tradições.
               </p>
               <Link to="/chat">
                 <Button
-                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood w-full py-2 rounded-lg transition-all duration-200 shadow group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light w-full py-2 rounded-lg shadow group
+                    hover:brightness-105 hover:shadow-lg focus:brightness-105 focus:shadow-lg active:brightness-95 active:shadow
+                    transition-all duration-200"
                   style={{
                     backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
                   }}
@@ -136,21 +161,27 @@ const Index = ({ onAuthModalToggle }) => {
 
             {/* Bíblia Interativa */}
             <div
-              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 transition-all duration-300 group
-                hover:-translate-y-2 hover:shadow-2xl active:-translate-y-2 active:shadow-2xl touch-manipulation"
-              style={{ willChange: 'transform' }}
+              className="bg-[#f5e8dc]/80 shadow-lg rounded-lg p-6 text-center border border-wood/10 group touch-manipulation"
+              style={{
+                willChange: 'transform',
+                transform: hoveredBox === 2 ? 'scale(1.08)' : 'scale(1)',
+                zIndex: hoveredBox === 2 ? 2 : 1,
+              }}
+              onMouseEnter={() => setHoveredBox(2)}
+              onMouseLeave={() => setHoveredBox(null)}
               data-aos="fade-up"
               data-aos-delay="300"
             >
-              <BookOpen className="w-12 h-12 text-wood-dark mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
+              <BookOpen className="w-12 h-12 text-wood-dark mx-auto mb-4" />
               <h3 className="text-xl font-bold text-wood-dark mb-2">Bíblia Interativa</h3>
               <p className="text-wood-darkest/70 mb-4">
                 Explore a Bíblia de forma interativa, selecione capítulos e receba explicações sobre os textos em tempo real.
               </p>
               <Link to="/bible">
                 <Button
-                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood w-full py-2 rounded-lg transition-all duration-200 shadow group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light w-full py-2 rounded-lg shadow group
+                    hover:brightness-105 hover:shadow-lg focus:brightness-105 focus:shadow-lg active:brightness-95 active:shadow
+                    transition-all duration-200"
                   style={{
                     backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
                   }}
@@ -171,20 +202,22 @@ const Index = ({ onAuthModalToggle }) => {
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Link to="/chat">
                 <Button
-                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light hover:from-wood-dark hover:to-wood transition-all duration-200 w-full sm:w-auto px-8 py-3 rounded-xl shadow flex items-center gap-2 group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="bg-gradient-to-r from-wood/90 to-wood-dark/90 text-cream-light w-full sm:w-auto px-8 py-3 rounded-xl shadow flex items-center gap-2 group
+                    hover:brightness-110 hover:shadow-xl focus:brightness-110 focus:shadow-xl active:brightness-95 active:shadow
+                    transition-all duration-200"
                   style={{
                     backgroundImage: 'linear-gradient(90deg, #7c5c47 0%, #5C3D2E 100%)',
                   }}
                 >
-                  <MessageCircle size={20} className="mb-0.5 group-hover:animate-pulse" />
+                  <MessageCircle size={20} className="mb-0.5" />
                   Iniciar Conversa
                 </Button>
               </Link>
               <Link to="/bible">
                 <Button
-                  className="bg-gradient-to-r from-cream-light/90 to-cream/80 text-wood-dark hover:from-cream hover:to-cream-light transition-all duration-200 w-full sm:w-auto px-8 py-3 rounded-xl shadow flex items-center gap-2 group
-                    focus:animate-pulse active:animate-pulse hover:animate-pulse"
+                  className="bg-gradient-to-r from-cream-light/90 to-cream/80 text-wood-dark w-full sm:w-auto px-8 py-3 rounded-xl shadow flex items-center gap-2 group
+                    hover:brightness-110 hover:shadow-xl focus:brightness-110 focus:shadow-xl active:brightness-95 active:shadow
+                    transition-all duration-200"
                   style={{
                     backgroundImage: 'linear-gradient(90deg, #f5e8dc 0%, #f5f5f0 100%)',
                   }}
@@ -199,6 +232,7 @@ const Index = ({ onAuthModalToggle }) => {
       </section>
 
       <Footer />
+      {isPWA && <BottomNavBar />}
     </div>
   );
 };
