@@ -32,7 +32,7 @@ export default function BottomNavBar({ isPWA }: { isPWA: boolean }) {
               : 'text-wood-dark/60'
           }`}
         >
-          <span className="w-6 h-6 mb-1">{item.icon}</span>
+          <span className="w-6 h-6 mb-1 mt-2">{item.icon}</span>
           {item.label}
         </Link>
       ))}

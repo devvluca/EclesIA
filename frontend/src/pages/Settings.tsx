@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageSquare, Mail, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/supabaseClient';
 
 export default function Settings() {
   const { user, signOut } = useAuth();
+  const [email, setEmail] = useState(user?.email || '');
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailMsg, setEmailMsg] = useState('');
 
   // Tenta pegar o primeiro nome do usuário
   const fullName =
@@ -12,6 +16,34 @@ export default function Settings() {
     user?.email?.split('@')[0] ||
     'Usuário';
   const firstName = fullName.split(' ')[0];
+
+  // Função para alterar email
+  const handleChangeEmail = async () => {
+    setEmailLoading(true);
+    setEmailMsg('');
+    const { error } = await supabase.auth.updateUser({ email });
+    if (error) {
+      setEmailMsg('Erro ao atualizar email: ' + error.message);
+    } else {
+      setEmailMsg('Email atualizado! Verifique sua caixa de entrada para confirmar.');
+    }
+    setEmailLoading(false);
+  };
+
+  // Função para deletar conta
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) return;
+    try {
+      // Se você tiver uma API para deletar o usuário, chame aqui.
+      // Exemplo: await fetch('/api/deleteUser', { method: 'POST', body: JSON.stringify({ userId: user?.id }) });
+      const { error } = await supabase.rpc('delete_user'); // ou seu método de deleção
+      if (error) throw error;
+      alert('Conta excluída com sucesso.');
+      signOut();
+    } catch (error: any) {
+      alert('Erro ao excluir a conta: ' + (error.message || error));
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto py-10 px-4">
@@ -33,6 +65,28 @@ export default function Settings() {
           <LogOut size={18} />
           Sair
         </button>
+      </div>
+
+      {/* Alterar email */}
+      <div className="mb-8">
+        <h3 className="text-wood-dark text-lg font-semibold mb-2">Alterar Email</h3>
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="flex-1 p-2 border border-wood-light rounded-lg"
+            placeholder="Novo email"
+          />
+          <button
+            onClick={handleChangeEmail}
+            disabled={emailLoading}
+            className="bg-wood-dark text-cream-light px-4 py-2 rounded-lg font-medium hover:bg-wood-dark/90 transition-colors"
+          >
+            {emailLoading ? 'Salvando...' : 'Salvar'}
+          </button>
+        </div>
+        {emailMsg && <div className="text-xs mt-2 text-wood-dark">{emailMsg}</div>}
       </div>
 
       <div className="space-y-8">
@@ -73,6 +127,15 @@ export default function Settings() {
             </a>
           </div>
         </div>
+      </div>
+      {/* Deletar conta */}
+      <div className="mt-12 flex justify-center">
+        <button
+          onClick={handleDeleteAccount}
+          className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+        >
+          Deletar minha conta
+        </button>
       </div>
     </div>
   );
