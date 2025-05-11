@@ -36,6 +36,8 @@ const Bible = ({ onAuthModalToggle }) => {
   // Novo: estados para swipe horizontal de capítulos
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
+  // Novo: estado para bloquear seleção durante swipe
+  const [isSwiping, setIsSwiping] = useState(false);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -82,6 +84,25 @@ const Bible = ({ onAuthModalToggle }) => {
     setIsPWA(isStandalone);
   }, []);
 
+  useEffect(() => {
+    // Deselect verse on click/tap outside
+    const handleClickOutside = (e) => {
+      // Se o clique não for dentro de um versículo ou da mini box, deseleciona
+      if (
+        !e.target.closest('.bible-verse') &&
+        !e.target.closest('.mini-box-flutuante')
+      ) {
+        setSelectedVerse(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
   const fetchChapter = async (bookAbbrev, chapter) => {
     try {
       const response = await axios.get(`${API_URL}/verses/nvi/${bookAbbrev}/${chapter}`, {
@@ -102,6 +123,8 @@ const Bible = ({ onAuthModalToggle }) => {
   };
 
   const handleChapterSelect = (chapter) => {
+    // Bloqueia seleção se estiver swipando no mobile
+    if (isSwiping) return;
     setSelectedChapter(chapter);
     setShowSelector(false); // Fecha o seletor
     fetchChapter(selectedBook.abbrev.pt, chapter);
@@ -114,6 +137,8 @@ const Bible = ({ onAuthModalToggle }) => {
     if (newChapter > 0 && newChapter <= selectedBook.chapters) {
       setSelectedChapter(newChapter);
       fetchChapter(selectedBook.abbrev.pt, newChapter);
+      setSelectedVerse(null); // Limpa seleção ao trocar capítulo
+      setIsBoxVisible(false); // Fecha a box ao trocar capítulo
     }
   };
 
@@ -141,12 +166,41 @@ const Bible = ({ onAuthModalToggle }) => {
     }
   };
 
+  // Corrige bug de seleção/desseleção instantânea no mobile
   const handleVerseTouchEnd = (verse, event) => {
     if (!touchMoved) {
+      // Evita que o touch dispare também o click
+      event.preventDefault();
+      event.stopPropagation();
+      if (selectedVerse === verse.number) {
+        setSelectedVerse(null);
+        setIsBoxVisible(false);
+      } else {
+        setSelectedVerse(verse.number);
+        setSelectedText(verse.text);
+        const rect = event.target.getBoundingClientRect();
+        setBoxPosition({ x: rect.left + window.scrollX, y: rect.bottom + window.scrollY + 16 }); // 16px abaixo
+        setIsBoxVisible(true);
+        setResponse('');
+      }
+    }
+  };
+
+  // Corrige bug de click duplicado no desktop (event bubbling)
+  const handleVerseClick = (verse, e) => {
+    // Evita que o click duplo (após touch) aconteça
+    if (e.detail > 1) return;
+    if (selectedVerse === verse.number) {
+      setSelectedVerse(null);
+      setIsBoxVisible(false);
+    } else {
       setSelectedVerse(verse.number);
       setSelectedText(verse.text);
-      const rect = event.target.getBoundingClientRect();
-      setBoxPosition({ x: rect.left, y: rect.bottom + window.scrollY });
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      setBoxPosition({
+        x: rect.left + window.scrollX,
+        y: rect.bottom + window.scrollY + 16, // 16px abaixo
+      });
       setIsBoxVisible(true);
       setResponse('');
     }
@@ -157,12 +211,17 @@ const Bible = ({ onAuthModalToggle }) => {
     if (event.touches && event.touches.length === 1) {
       setTouchStartX(event.touches[0].clientX);
       setTouchEndX(event.touches[0].clientX);
+      setIsSwiping(false);
     }
   };
 
   const handleMainTouchMove = (event) => {
     if (event.touches && event.touches.length === 1) {
       setTouchEndX(event.touches[0].clientX);
+      // Se o movimento for significativo, considera como swipe
+      if (Math.abs(event.touches[0].clientX - touchStartX) > 20) {
+        setIsSwiping(true);
+      }
     }
   };
 
@@ -179,6 +238,7 @@ const Bible = ({ onAuthModalToggle }) => {
     }
     setTouchStartX(0);
     setTouchEndX(0);
+    setTimeout(() => setIsSwiping(false), 100); // Libera seleção após swipe
   };
 
   const addToHistory = (verse, response) => {
@@ -366,25 +426,27 @@ const Bible = ({ onAuthModalToggle }) => {
             </div>
           )}
 
-          <div className="flex items-center justify-center space-x-4"> {/* Adicionado items-center para alinhamento vertical */}
+          <div className="flex items-center justify-center space-x-4 z-20 relative">
             <button
               type="button"
-              onClick={() => handleChapterChange(-1)} // Retrocede capítulos
-              disabled={!selectedBook || selectedChapter <= 1} // Desabilita apenas no primeiro capítulo
+              onClick={(e) => { e.stopPropagation(); handleChapterChange(-1); }}
+              disabled={!selectedBook || selectedChapter <= 1}
               className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 w-10 bg-wood text-cream-light hover:bg-wood-dark"
-              style={{ padding: '0.5rem' }} // Ajustado padding para manter a área clicável sem deslocar o botão
+              style={{ padding: '0.5rem', zIndex: 30 }}
+              tabIndex={0}
             >
               <ChevronLeft />
             </button>
-            <h2 className="text-base sm:text-xl font-bold text-cream-light text-center">
+            <h2 className="text-base sm:text-xl font-bold text-cream-light text-center z-10">
               {selectedBook?.name} - Capítulo {selectedChapter}
             </h2>
             <button
               type="button"
-              onClick={() => handleChapterChange(1)} // Avança capítulos
-              disabled={!selectedBook || selectedChapter >= selectedBook?.chapters} // Desabilita apenas no último capítulo
+              onClick={(e) => { e.stopPropagation(); handleChapterChange(1); }}
+              disabled={!selectedBook || selectedChapter >= selectedBook?.chapters}
               className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 w-10 bg-wood text-cream-light hover:bg-wood-dark"
-              style={{ padding: '0.5rem' }} // Ajustado padding para manter a área clicável sem deslocar o botão
+              style={{ padding: '0.5rem', zIndex: 30 }}
+              tabIndex={0}
             >
               <ChevronRight />
             </button>
@@ -448,9 +510,14 @@ const Bible = ({ onAuthModalToggle }) => {
                   onTouchStart={handleVerseTouchStart}
                   onTouchMove={handleVerseTouchMove}
                   onTouchEnd={(e) => handleVerseTouchEnd(verse, e)}
-                  className={`relative ${
-                    selectedVerse === verse.number ? 'border-dashed border-b-2 border-wood-dark' : ''
-                  }`}
+                  onClick={(e) => handleVerseClick(verse, e)}
+                  className={`bible-verse relative cursor-pointer transition-all duration-150
+                    ${selectedVerse === verse.number ? 'font-bold scale-105 bg-wood/10' : ''}
+                  `}
+                  style={{
+                    borderBottom: selectedVerse === verse.number ? '2px dashed #8B5C2A' : undefined,
+                    zIndex: selectedVerse === verse.number ? 10 : undefined,
+                  }}
                 >
                   <strong>{verse.number}</strong> {verse.text}
                 </p>
@@ -462,19 +529,17 @@ const Bible = ({ onAuthModalToggle }) => {
         {/* Mini Box Flutuante */}
         {isBoxVisible && (
           <div
-            className="absolute bg-white shadow-lg rounded-lg p-4 border border-wood-light"
+            className="mini-box-flutuante absolute bg-white shadow-lg rounded-lg p-4 border border-wood-light"
             style={{
               top: boxPosition.y, // Usa a posição calculada
               left: boxPosition.x, // Usa a posição calculada
               width: '90%', // Ajustado para largura total em mobile
               maxWidth: '400px',
-              minHeight: '150px',
+              minHeight: '0px',
+              zIndex: 50,
             }}
           >
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs sm:text-sm text-wood-dark"> {/* Texto menor em telas pequenas */}
-                <strong>Texto selecionado:</strong> {selectedText}
-              </p>
+            <div className="flex justify-end items-center mb-0">
               <button
                 onClick={() => setIsBoxVisible(false)}
                 className="text-wood-dark hover:text-wood-darkest"
