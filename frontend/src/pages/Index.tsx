@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -7,10 +7,31 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import BottomNavBar from '@/components/BottomNavBar';
 
+const heroImages = [
+  {
+    url: '/img/banner_episcopal.jpg',
+    style: {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center -15%',
+    },
+  },
+  {
+    url: '/img/iconografia.png', // coloque o arquivo em public/img/iconografia.png
+    style: {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: '#e7d1b2',
+    },
+  },
+];
+
 const Index = ({ onAuthModalToggle }) => {
   // Estados para controlar o hover de cada box
   const [hoveredBox, setHoveredBox] = useState<number | null>(null);
   const [isPWA, setIsPWA] = useState(false);
+  const [currentHero, setCurrentHero] = useState(0);
+  const carouselInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     AOS.init({
@@ -25,7 +46,26 @@ const Index = ({ onAuthModalToggle }) => {
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     setIsPWA(isStandalone);
+
+    // Carrossel automático
+    carouselInterval.current = setInterval(() => {
+      setCurrentHero((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+
+    return () => {
+      if (carouselInterval.current) clearInterval(carouselInterval.current);
+    };
   }, []);
+
+  const handleHeroDotClick = (idx: number) => {
+    setCurrentHero(idx);
+    if (carouselInterval.current) {
+      clearInterval(carouselInterval.current);
+      carouselInterval.current = setInterval(() => {
+        setCurrentHero((prev) => (prev + 1) % heroImages.length);
+      }, 5000);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-cream-light via-cream to-cream-light">
@@ -33,15 +73,29 @@ const Index = ({ onAuthModalToggle }) => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center">
+        {/* Carrossel de imagens */}
         <div
-          className="absolute inset-0 bg-cover bg-center z-0"
+          className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700"
           style={{
-            backgroundImage: 'url("/img/banner_episcopal.jpg")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center -15%',
+            backgroundImage: `url("${heroImages[currentHero].url}")`,
+            ...heroImages[currentHero].style,
           }}
         />
         <div className="absolute inset-0 bg-wood-darkest/40 z-1" />
+        {/* Indicadores do carrossel */}
+        <div className="absolute bottom-8 left-1/2 z-30 flex gap-2 -translate-x-1/2">
+          {heroImages.map((_, idx) => (
+            <button
+              key={idx}
+              aria-label={`Ir para imagem ${idx + 1}`}
+              className={`w-3 h-3 rounded-full border border-cream transition-all duration-200
+                ${currentHero === idx ? 'bg-cream' : 'bg-cream/40'}
+              `}
+              onClick={() => handleHeroDotClick(idx)}
+              style={{ outline: 'none' }}
+            />
+          ))}
+        </div>
         <div className="container mx-auto px-4 relative z-20">
           <div className="md:w-1/2 animate-fade-in" data-aos="fade-up">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight text-cream drop-shadow">
