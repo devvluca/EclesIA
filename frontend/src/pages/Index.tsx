@@ -7,7 +7,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import BottomNavBar from '@/components/BottomNavBar';
 
-const heroImages = [
+const getHeroImages = (isMobile: boolean) => [
   {
     url: '/img/banner_episcopal.jpg',
     style: {
@@ -15,15 +15,25 @@ const heroImages = [
       backgroundPosition: 'center -15%',
     },
   },
-  {
-    url: '/img/iconografia.png', // coloque o arquivo em public/img/iconografia.png
-    style: {
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      backgroundColor: '#e7d1b2',
-    },
-  },
+  isMobile
+    ? {
+        url: '/img/iconografia-mobile.png',
+        style: {
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: '#e7d1b2',
+        },
+      }
+    : {
+        url: '/img/iconografia.png',
+        style: {
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: '#e7d1b2',
+        },
+      },
 ];
 
 const Index = ({ onAuthModalToggle }) => {
@@ -31,7 +41,18 @@ const Index = ({ onAuthModalToggle }) => {
   const [hoveredBox, setHoveredBox] = useState<number | null>(null);
   const [isPWA, setIsPWA] = useState(false);
   const [currentHero, setCurrentHero] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const carouselInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Atualiza isMobile ao redimensionar
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Atualiza imagens do carrossel conforme o tamanho da tela
+  const heroImages = getHeroImages(isMobile);
 
   useEffect(() => {
     AOS.init({
@@ -55,7 +76,7 @@ const Index = ({ onAuthModalToggle }) => {
     return () => {
       if (carouselInterval.current) clearInterval(carouselInterval.current);
     };
-  }, []);
+  }, [isMobile]); // reinicia carrossel ao trocar entre mobile/desktop
 
   const handleHeroDotClick = (idx: number) => {
     setCurrentHero(idx);
