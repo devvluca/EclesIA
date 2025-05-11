@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,15 @@ import { Link } from 'react-router-dom';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const AboutUs = ({ onAuthModalToggle }) => {
+  const [isPWA, setIsPWA] = useState(false);
+
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar onAuthModalToggle={onAuthModalToggle} />
@@ -118,8 +127,6 @@ const AboutUs = ({ onAuthModalToggle }) => {
           </div>
         </div>
       </section>
-      
-      <Footer />
     </div>
   );
 };

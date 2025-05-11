@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +12,14 @@ const Account: React.FC = () => {
   const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const [isPWA, setIsPWA] = useState(false);
+
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
+  }, []);
 
   const handleUpdateProfile = async () => {
     setLoading(true);
@@ -102,8 +110,8 @@ const Account: React.FC = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
+    // Não adicione Footer aqui
   );
 };
 

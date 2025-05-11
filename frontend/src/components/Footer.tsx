@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MessageSquare } from 'lucide-react'; // Importar ícones para os links de contato
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 const Footer = () => {
   return (
     <footer className="bg-wood-dark text-cream-light pt-12 pb-6">
@@ -27,6 +31,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
+                  onClick={scrollToTop}
                   className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
                   style={{ fontFamily: 'inherit' }}
                 >
@@ -36,6 +41,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/sobre"
+                  onClick={scrollToTop}
                   className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
                   style={{ fontFamily: 'inherit' }}
                 >
@@ -45,6 +51,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/chat"
+                  onClick={scrollToTop}
                   className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
                   style={{ fontFamily: 'inherit' }}
                 >
@@ -54,6 +61,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/bible"
+                  onClick={scrollToTop}
                   className="px-2 py-1 border border-cream/20 rounded-md bg-transparent text-cream/80 hover:text-cream hover:bg-wood-light/10 transition-all duration-150 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cream/30"
                   style={{ fontFamily: 'inherit' }}
                 >

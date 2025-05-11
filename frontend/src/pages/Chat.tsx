@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/context/AuthContext';
@@ -655,7 +654,6 @@ const Chat = ({ onAuthModalToggle }) => {
             </Button>
           </div>
         </main>
-        {!isPWA && <Footer />}
       </div>
     );
   }
@@ -674,7 +672,6 @@ const Chat = ({ onAuthModalToggle }) => {
             </div>
           </div>
         </main>
-        {!isPWA && <Footer />}
       </div>
     );
   }
@@ -1064,7 +1061,6 @@ const Chat = ({ onAuthModalToggle }) => {
           </div>
         </div>
       </main>
-      {!isPWA && <Footer />}
 
       {/* Modal de confirmação para apagar todos os chats */}
       {showDeleteAllModal && (

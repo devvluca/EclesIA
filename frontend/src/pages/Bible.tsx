@@ -280,7 +280,6 @@ const Bible = ({ onAuthModalToggle }) => {
             </Button>
           </div>
         </main>
-        {!isPWA && <Footer />}
       </div>
     );
   }
@@ -507,8 +506,8 @@ const Bible = ({ onAuthModalToggle }) => {
           </div>
         )}
       </main>
-      {!isPWA && <Footer />}
     </div>
+    // Não adicione Footer aqui
   );
 };
 
