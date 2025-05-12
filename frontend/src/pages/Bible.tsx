@@ -85,14 +85,15 @@ const Bible = ({ onAuthModalToggle }) => {
   }, []);
 
   useEffect(() => {
-    // Deselect verse on click/tap outside
+    // Deselect verse and close mini box on click/tap outside
     const handleClickOutside = (e) => {
-      // Se o clique não for dentro de um versículo ou da mini box, deseleciona
+      // Se o clique não for dentro de um versículo ou da mini box, deseleciona e fecha a mini box
       if (
         !e.target.closest('.bible-verse') &&
         !e.target.closest('.mini-box-flutuante')
       ) {
         setSelectedVerse(null);
+        setIsBoxVisible(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -174,7 +175,7 @@ const Bible = ({ onAuthModalToggle }) => {
       event.stopPropagation();
       if (selectedVerse === verse.number) {
         setSelectedVerse(null);
-        setIsBoxVisible(false);
+        setIsBoxVisible(false); // Fechar mini box ao deselecionar
       } else {
         setSelectedVerse(verse.number);
         setSelectedText(verse.text);
@@ -192,7 +193,7 @@ const Bible = ({ onAuthModalToggle }) => {
     if (e.detail > 1) return;
     if (selectedVerse === verse.number) {
       setSelectedVerse(null);
-      setIsBoxVisible(false);
+      setIsBoxVisible(false); // Fechar mini box ao deselecionar
     } else {
       setSelectedVerse(verse.number);
       setSelectedText(verse.text);
@@ -529,45 +530,70 @@ const Bible = ({ onAuthModalToggle }) => {
         {/* Mini Box Flutuante */}
         {isBoxVisible && (
           <div
-            className="mini-box-flutuante absolute bg-white shadow-lg rounded-lg p-4 border border-wood-light"
+            className="mini-box-flutuante absolute z-50"
             style={{
-              top: boxPosition.y, // Usa a posição calculada
-              left: boxPosition.x, // Usa a posição calculada
-              width: '90%', // Ajustado para largura total em mobile
-              maxWidth: '400px',
+              top: boxPosition.y,
+              left: boxPosition.x,
+              width: '320px', // Mais estreita para ficar mais quadrada
+              maxWidth: '95vw',
               minHeight: '0px',
-              zIndex: 50,
             }}
           >
-            <div className="flex justify-end items-center mb-0">
-              <button
-                onClick={() => setIsBoxVisible(false)}
-                className="text-wood-dark hover:text-wood-darkest"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <textarea
-              className="w-full p-2 border border-wood-light rounded-lg resize-none text-xs sm:text-sm" // Texto menor em telas pequenas
-              rows={2}
-              placeholder="Digite sua pergunta sobre o texto selecionado..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleInputKeyDown}
-              disabled={isLoading}
-            />
-            <Button
-              onClick={fetchExplanation}
-              className="mt-2 bg-wood text-cream-light hover:bg-wood-dark w-full"
-              disabled={isLoading || !input.trim()}
+            <div
+              className="relative bg-white border border-wood-light rounded-2xl shadow-2xl pb-2 px-2 pt-2"
             >
-              Enviar
-            </Button>
-            {response && (
-              <div className="mt-4 p-2 bg-cream-light border border-wood-light rounded-lg text-xs sm:text-sm"> {/* Texto menor em telas pequenas */}
-                {response}
+              <div className="flex items-center justify-between mb-1 mt-0">
+                {/* Versículo abreviado */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-wood-dark">
+                    Pergunte sobre o versículo:
+                  </span>
+                  {selectedBook && selectedChapter && selectedVerse && (
+                    <span className="ml-1 px-2 py-0.5 rounded bg-wood/10 text-wood-dark font-bold text-xs border border-wood-light">
+                      {/* Abreviação com primeira maiúscula e segunda minúscula */}
+                      {selectedBook.abbrev?.pt
+                        ? selectedBook.abbrev.pt.charAt(0).toUpperCase() + selectedBook.abbrev.pt.slice(1).toLowerCase()
+                        : selectedBook.abbrev
+                          ? selectedBook.abbrev.charAt(0).toUpperCase() + selectedBook.abbrev.slice(1).toLowerCase()
+                          : ''
+                      } {selectedChapter}:{selectedVerse}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setIsBoxVisible(false)}
+                  className="text-wood-dark hover:text-wood-darkest rounded-full p-1 transition-colors hover:bg-wood/10"
+                  aria-label="Fechar"
+                  style={{ marginTop: 0, marginRight: 0 }}
+                >
+                  <X size={16} />
+                </button>
               </div>
-            )}
+              <div className="mb-2 mt-0">
+                <textarea
+                  className="w-full p-2 border border-wood-light rounded-xl resize-none text-xs sm:text-sm bg-cream-light focus:outline-none focus:ring-2 focus:ring-wood/30 transition-all"
+                  rows={2}
+                  placeholder="Digite sua pergunta sobre o texto selecionado..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleInputKeyDown}
+                  disabled={isLoading}
+                  style={{ minHeight: '36px', marginTop: '2px' }}
+                />
+              </div>
+              <Button
+                onClick={fetchExplanation}
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-xs sm:text-sm font-semibold h-8 px-3 py-1 mt-1 bg-wood text-cream-light hover:bg-wood-dark w-full shadow-md transition-all"
+                disabled={isLoading || !input.trim()}
+              >
+                Enviar
+              </Button>
+              {response && (
+                <div className="mt-2 p-2 bg-cream-light border border-wood-light rounded-xl text-xs sm:text-sm text-wood-dark shadow-inner transition-all">
+                  {response}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>
