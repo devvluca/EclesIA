@@ -19,7 +19,7 @@ const getHeroImages = (isMobile: boolean) => [
     ? {
         url: '/img/iconografia_mobile.jpg', // <-- altere aqui se o nome do arquivo for com underline
         style: {
-          backgroundSize: 'cover',
+          backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundColor: '#e7d1b2',

@@ -352,11 +352,20 @@ const Bible = ({ onAuthModalToggle }) => {
       onTouchStart={handleMainTouchStart}
       onTouchMove={handleMainTouchMove}
       onTouchEnd={handleMainTouchEnd}
+      style={{
+        backgroundImage: 'url(/img/fundo_deserto.jpg)', // ajuste o caminho conforme necessário
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
     >
       <Navbar onAuthModalToggle={onAuthModalToggle} />
       <main className="flex-grow pt-[calc(4rem+4px)]">
         {/* Seletor de livros, capítulos e navegação */}
-        <div className="bg-wood text-cream-light p-4 flex flex-wrap items-center justify-center relative"> {/* Adicionado flex-wrap para melhor responsividade */}
+        <div
+          className="bg-wood text-cream-light p-4 flex flex-wrap items-center justify-center relative"
+          style={{ marginTop: '-0.5rem' }} // Ajusta para sobrepor o espaço extra acima
+        >
           <div className="absolute left-4 right-4 flex items-center justify-between sm:justify-start space-x-2 sm:space-x-0"> {/* Ajustado para alinhar botões */}
             <button
               onClick={() => {
@@ -438,7 +447,20 @@ const Bible = ({ onAuthModalToggle }) => {
             >
               <ChevronLeft />
             </button>
-            <h2 className="text-base sm:text-xl font-bold text-cream-light text-center z-10">
+            <h2
+              className="text-base sm:text-xl font-bold text-cream-light text-center z-10 tracking-wide"
+              style={{
+                letterSpacing: '0.04em',
+                textShadow: '0 2px 8px rgba(0,0,0,0.10), 0 1px 0 #fff2',
+                padding: '0.25em 1em',
+                borderRadius: '0.75em',
+                background: 'rgba(139, 92, 42, 0.18)', // wood color, bem sutil
+                boxShadow: '0 2px 8px rgba(139,92,42,0.08)',
+                fontFamily: 'serif',
+                fontWeight: 700,
+                border: '1px solid rgba(139,92,42,0.10)',
+              }}
+            >
               {selectedBook?.name} - Capítulo {selectedChapter}
             </h2>
             <button
@@ -503,7 +525,7 @@ const Bible = ({ onAuthModalToggle }) => {
 
         {/* Exibição de Versículos */}
         {verses.length > 0 && (
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 mb-16"> {/* Ajustado para largura total em mobile */}
+          <div className="bg-white/80 p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 mb-16 backdrop-blur-sm"> {/* Ajustado para largura total em mobile */}
             <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
               {verses.map((verse) => (
                 <p
