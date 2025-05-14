@@ -161,7 +161,33 @@ const Index = ({ onAuthModalToggle }) => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center">
-        {/* Carrossel de imagens */}
+        {/* Bola flutuante central - menor e sem anel */}
+        <motion.div
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+          initial={{ opacity: 0, x: 0, y: 0, scale: 0.95 }}
+          animate={{
+            opacity: 0.95,
+            x: [0, 32, -32, 0],
+            y: [0, -24, 24, 0],
+            scale: [0.98, 1.12, 0.98],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut"
+          }}
+        >
+          <div
+            className="w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, #7c5c47 0%, #7c5c4700 80%)",
+              filter: "blur(8px)",
+              opacity: 0.95
+            }}
+            aria-hidden
+          />
+        </motion.div>
         <div
           className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700"
           style={{
