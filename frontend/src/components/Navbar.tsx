@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, User } from 'lucide-react';
@@ -16,20 +16,43 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
-  // Detecta se está nas páginas que devem travar a navbar
-  const isLocked = location.pathname === '/chat' || location.pathname === '/bible';
+  // Detecta se está na página da bíblia
+  const isBible = location.pathname === '/bible';
+
+  // Estado para controlar visibilidade ao scroll
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    if (isLocked) {
-      setIsScrolled(false); // Sempre forma normal, nunca balão
-      return;
+    if (!isBible) {
+      setVisible(true);
+      setIsScrolled(false);
+      const handleScroll = () => setIsScrolled(window.scrollY > 10);
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
+    } else {
+      setIsScrolled(false);
+      let ticking = false;
+      const handleScroll = () => {
+        const currentY = window.scrollY;
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            if (currentY > lastScrollY.current && currentY > 40) {
+              setVisible(false); // Scroll down, hide
+            } else {
+              setVisible(true); // Scroll up, show
+            }
+            lastScrollY.current = currentY;
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
     }
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLocked]);
+    // eslint-disable-next-line
+  }, [isBible]);
 
   const getFormattedFirstName = (fullName?: string) => {
     if (!fullName) return 'Usuário';
@@ -41,7 +64,12 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   const toggleDropdown = () => setIsDropdownOpen((v) => !v);
 
   return (
-    <nav className="fixed z-50 w-full px-0 group">
+    <nav
+      className={`fixed z-50 w-full px-0 group transition-transform duration-300 ease-in-out
+        ${isBible ? (visible ? 'translate-y-0' : '-translate-y-full') : ''}
+      `}
+      style={{ willChange: isBible ? 'transform' : undefined }}
+    >
       <motion.div
         className={`mx-auto
           ${isScrolled
