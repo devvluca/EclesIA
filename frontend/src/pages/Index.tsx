@@ -8,18 +8,26 @@ import 'aos/dist/aos.css';
 import BottomNavBar from '@/components/BottomNavBar';
 
 const getHeroImages = (isMobile: boolean) => [
-  {
-    url: '/img/banner_episcopal.jpg',
-    style: {
-      backgroundSize: 'cover',
-      backgroundPosition: 'center -15%',
-    },
-  },
   isMobile
     ? {
-        url: '/img/iconografia_mobile.jpg', // <-- altere aqui se o nome do arquivo for com underline
+        url: '/img/banner_episcopal_mobile.jpg',
         style: {
-          backgroundSize: '100% 100%',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        },
+      }
+    : {
+        url: '/img/banner_episcopal.jpg',
+        style: {
+          backgroundSize: 'cover',
+          backgroundPosition: 'center -15%',
+        },
+      },
+  isMobile
+    ? {
+        url: '/img/iconografia_mobile.jpg',
+        style: {
+          backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundColor: '#e7d1b2',
