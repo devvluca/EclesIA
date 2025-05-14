@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -38,6 +38,14 @@ const Bible = ({ onAuthModalToggle }) => {
   const [touchEndX, setTouchEndX] = useState(0);
   // Novo: estado para bloquear seleção durante swipe
   const [isSwiping, setIsSwiping] = useState(false);
+
+  // Corrigir bug de swipe fantasma e múltiplos fetches no Safari/iOS
+  // 1. Use refs para garantir que o swipe só é considerado se for realmente swipe (não scroll, não tap)
+  // 2. Bloqueie múltiplos fetches concorrentes de capítulos
+  // 3. Garanta que o número de versículos não seja sobrescrito por requisições antigas
+
+  const isFetchingChapter = useRef(false);
+  const lastFetchId = useRef(0);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -104,16 +112,30 @@ const Bible = ({ onAuthModalToggle }) => {
     };
   }, []);
 
+  // Corrigido: fetchChapter agora usa um id para garantir que só o último resultado é considerado
   const fetchChapter = async (bookAbbrev, chapter) => {
+    lastFetchId.current += 1;
+    const fetchId = lastFetchId.current;
+    isFetchingChapter.current = true;
     try {
       const response = await axios.get(`${API_URL}/verses/nvi/${bookAbbrev}/${chapter}`, {
         headers: {
           Authorization: `Bearer ${API_TOKEN}`,
         },
       });
-      setVerses(response.data.verses);
+      // Só atualiza se for o fetch mais recente
+      if (fetchId === lastFetchId.current) {
+        setVerses(response.data.verses);
+      }
     } catch (error) {
+      if (fetchId === lastFetchId.current) {
+        setVerses([]); // Limpa apenas se for o fetch mais recente
+      }
       console.error('Erro ao carregar os versículos:', error);
+    } finally {
+      if (fetchId === lastFetchId.current) {
+        isFetchingChapter.current = false;
+      }
     }
   };
 
@@ -131,7 +153,9 @@ const Bible = ({ onAuthModalToggle }) => {
     fetchChapter(selectedBook.abbrev.pt, chapter);
   };
 
+  // Corrigido: handleChapterChange não dispara se já está carregando
   const handleChapterChange = (direction) => {
+    if (isFetchingChapter.current) return;
     if (!selectedBook || !selectedChapter) return;
 
     const newChapter = selectedChapter + direction;
@@ -196,7 +220,9 @@ const Bible = ({ onAuthModalToggle }) => {
   };
 
   // Novo: handlers para swipe horizontal (capítulos)
+  // Corrigido: bloqueia swipe enquanto está carregando capítulo
   const handleMainTouchStart = (event) => {
+    if (isFetchingChapter.current) return;
     if (event.touches && event.touches.length === 1) {
       setTouchStartX(event.touches[0].clientX);
       setTouchEndX(event.touches[0].clientX);
@@ -205,6 +231,7 @@ const Bible = ({ onAuthModalToggle }) => {
   };
 
   const handleMainTouchMove = (event) => {
+    if (isFetchingChapter.current) return;
     if (event.touches && event.touches.length === 1) {
       setTouchEndX(event.touches[0].clientX);
       // Se o movimento for significativo, considera como swipe
@@ -215,6 +242,7 @@ const Bible = ({ onAuthModalToggle }) => {
   };
 
   const handleMainTouchEnd = () => {
+    if (isFetchingChapter.current) return;
     const diff = touchEndX - touchStartX;
     if (Math.abs(diff) > 40) { // threshold para swipe
       if (diff < 0) {
