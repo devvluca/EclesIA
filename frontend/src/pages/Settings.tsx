@@ -58,13 +58,23 @@ export default function Settings() {
         </div>
         <div className="text-xl font-bold text-wood-dark mb-1">{firstName}</div>
         <div className="text-wood-dark/70 text-sm mb-3">{user?.email}</div>
-        <button
-          onClick={signOut}
-          className="flex items-center gap-2 px-4 py-2 bg-wood-dark text-cream-light rounded-lg font-medium hover:bg-wood-dark/90 transition-colors"
-        >
-          <LogOut size={18} />
-          Sair
-        </button>
+        {user ? (
+          <button
+            onClick={signOut}
+            className="flex items-center gap-2 px-4 py-2 bg-wood-dark text-cream-light rounded-lg font-medium hover:bg-wood-dark/90 transition-colors"
+          >
+            <LogOut size={18} />
+            Sair
+          </button>
+        ) : (
+          <a
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 bg-wood-dark text-cream-light rounded-lg font-medium hover:bg-wood-dark/90 transition-colors"
+          >
+            <User size={18} />
+            Fazer login
+          </a>
+        )}
       </div>
 
       {/* Alterar email */}
