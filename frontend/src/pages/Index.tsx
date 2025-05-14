@@ -6,6 +6,7 @@ import { BookOpen, MessageCircle, Home } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import BottomNavBar from '@/components/BottomNavBar';
+import { motion } from 'framer-motion';
 
 const getHeroImages = (isMobile: boolean) => [
   isMobile
@@ -43,6 +44,26 @@ const getHeroImages = (isMobile: boolean) => [
         },
       },
 ];
+
+const MotionTextRotate: React.FC<{ texts: string[]; className?: string }> = ({ texts, className }) => {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setIdx((i) => (i + 1) % texts.length), 7000); // 7 segundos
+    return () => clearInterval(interval);
+  }, [texts.length]);
+  return (
+    <motion.span
+      key={texts[idx]}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -24 }}
+      transition={{ duration: 1.8, ease: [0.4, 0, 0.2, 1] }} // Mais suave
+      className={className}
+    >
+      {texts[idx]}
+    </motion.span>
+  );
+};
 
 const Index = ({ onAuthModalToggle }) => {
   // Estados para controlar o hover de cada box
@@ -127,10 +148,29 @@ const Index = ({ onAuthModalToggle }) => {
         </div>
         <div className="container mx-auto px-4 relative z-20">
           <div className="md:w-1/2 animate-fade-in" data-aos="fade-up">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight text-cream drop-shadow">
-              Conversas Sagradas <br />
-              <span className="text-cream-light">EclesIA</span>
-            </h1>
+            <motion.h1
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight text-cream drop-shadow mt-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <span className="block mb-0">
+                <MotionTextRotate
+                  texts={[
+                    "Descubra a Tradição",
+                    "Pergunte, Aprenda",
+                    "Sua Jornada Espiritual",
+                    "Conhecimento e Fé",
+                    "Inspire-se na Palavra",
+                  ]}
+                  className="block"
+                />
+              </span>
+              <span className="block leading-tight -mt-2">
+                com<br />
+                <span className="text-cream-light">EclesIA</span>
+              </span>
+            </motion.h1>
             <p className="text-lg md:text-xl text-cream-light mb-8 max-w-lg">
               Tire suas dúvidas sobre a Igreja Episcopal Carismática do Brasil e interaja com a Bíblia com nossa IA especializada.
             </p>
