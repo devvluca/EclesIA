@@ -42,7 +42,10 @@ export default function BottomNavBar({ isPWA }: { isPWA: boolean }) {
     <nav
       ref={barRef}
       className="fixed left-0 right-0 bottom-0 z-50 bg-cream-light border-t border-wood/10 flex justify-around items-start h-24 md:hidden"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 16px)' }}
+      style={{
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 16px)',
+        bottom: '-1.5px' // Desce a navbar 1.5px
+      }}
     >
       {/* Linha animada marrom */}
       <div

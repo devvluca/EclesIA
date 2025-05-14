@@ -3,7 +3,7 @@ import { MessageSquare, Mail, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/supabaseClient';
 
-export default function Settings() {
+export default function Settings({ onAuthModalToggle }) {
   const { user, signOut } = useAuth();
   const [email, setEmail] = useState(user?.email || '');
   const [emailLoading, setEmailLoading] = useState(false);
@@ -67,13 +67,14 @@ export default function Settings() {
             Sair
           </button>
         ) : (
-          <a
-            href="/"
+          <button
+            onClick={onAuthModalToggle}
             className="flex items-center gap-2 px-4 py-2 bg-wood-dark text-cream-light rounded-lg font-medium hover:bg-wood-dark/90 transition-colors"
+            type="button"
           >
             <User size={18} />
             Fazer login
-          </a>
+          </button>
         )}
       </div>
 
