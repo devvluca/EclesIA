@@ -428,8 +428,8 @@ const Bible = ({ onAuthModalToggle }) => {
               type="button"
               onClick={(e) => { e.stopPropagation(); handleChapterChange(-1); }}
               disabled={!selectedBook || selectedChapter <= 1}
-              className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 w-10 bg-wood text-cream-light hover:bg-wood-dark"
-              style={{ padding: '0.5rem', zIndex: 30 }}
+              className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-wood text-cream-light hover:bg-wood-dark sm:h-10 sm:w-10 h-6 w-6"
+              style={{ padding: '0.1rem', zIndex: 30, marginLeft: '3px' }}
               tabIndex={0}
             >
               <ChevronLeft />
@@ -454,8 +454,8 @@ const Bible = ({ onAuthModalToggle }) => {
               type="button"
               onClick={(e) => { e.stopPropagation(); handleChapterChange(1); }}
               disabled={!selectedBook || selectedChapter >= selectedBook?.chapters}
-              className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 w-10 bg-wood text-cream-light hover:bg-wood-dark"
-              style={{ padding: '0.5rem', zIndex: 30 }}
+              className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-wood text-cream-light hover:bg-wood-dark sm:h-10 sm:w-10 h-6 w-6"
+              style={{ padding: '0.1rem', zIndex: 30, marginRight: '3px' }}
               tabIndex={0}
             >
               <ChevronRight />

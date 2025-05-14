@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -14,14 +14,22 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, signOut } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
+
+  // Detecta se está nas páginas que devem travar a navbar
+  const isLocked = location.pathname === '/chat' || location.pathname === '/bible';
 
   useEffect(() => {
+    if (isLocked) {
+      setIsScrolled(false); // Sempre forma normal, nunca balão
+      return;
+    }
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isLocked]);
 
   const getFormattedFirstName = (fullName?: string) => {
     if (!fullName) return 'Usuário';
