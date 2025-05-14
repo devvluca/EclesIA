@@ -35,30 +35,33 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthModalToggle }) => {
   return (
     <nav className="fixed z-50 w-full px-0 group">
       <motion.div
-        className={`mx-auto transition-all duration-200
+        className={`mx-auto
           ${isScrolled
-            ? "mt-2 rounded-2xl border border-wood-light bg-cream-light/80 shadow-md backdrop-blur-lg px-4 lg:px-8"
+            ? "mt-2 rounded-2xl border border-wood-light bg-cream-light/80 shadow-md backdrop-blur-lg"
             : "bg-cream-light/80 backdrop-blur-sm shadow-sm"
           }`}
         initial={false}
         animate={
           isScrolled
             ? {
-                maxWidth: 'calc(100vw - 100px)', // reduzido: ~24px de cada lado
+                maxWidth: 'calc(100vw - 90px)',
                 borderRadius: 16,
                 marginTop: 8,
                 paddingLeft: 16,
-                paddingRight: 16,
+                paddingRight: 16
               }
             : {
                 maxWidth: '100vw',
                 borderRadius: 0,
                 marginTop: 0,
                 paddingLeft: 0,
-                paddingRight: 0,
+                paddingRight: 0
               }
         }
-        transition={{ duration: 0.18, type: "tween" }}
+        transition={{
+          duration: 0.7,
+          ease: [0.4, 0, 0.2, 1]
+        }}
         style={{ overflow: 'visible' }}
       >
         <div className="flex items-center justify-between py-3 px-4">
