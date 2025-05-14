@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -45,23 +45,61 @@ const getHeroImages = (isMobile: boolean) => [
       },
 ];
 
-const MotionTextRotate: React.FC<{ texts: string[]; className?: string }> = ({ texts, className }) => {
+// Corrigido: animação de digitação sem piscar/repetir e com velocidade ajustada
+const TypingTextRotate: React.FC<{ texts: string[]; className?: string }> = ({ texts, className }) => {
   const [idx, setIdx] = useState(0);
+  const [displayed, setDisplayed] = useState('');
+  const [typing, setTyping] = useState(true);
+  const [charIdx, setCharIdx] = useState(0);
+  const [showCursor, setShowCursor] = useState(true);
+
+  // Pisca o cursor
   useEffect(() => {
-    const interval = setInterval(() => setIdx((i) => (i + 1) % texts.length), 7000); // 7 segundos
-    return () => clearInterval(interval);
-  }, [texts.length]);
+    const blink = setInterval(() => setShowCursor((v) => !v), 500);
+    return () => clearInterval(blink);
+  }, []);
+
+  // Efeito de digitação/apagamento
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    const current = texts[idx];
+
+    if (typing) {
+      if (charIdx < current.length) {
+        timeout = setTimeout(() => setCharIdx((c) => c + 1), 65); // Mais devagar
+      } else {
+        timeout = setTimeout(() => setTyping(false), 2000); // Espera antes de apagar
+      }
+    } else {
+      if (charIdx > 0) {
+        timeout = setTimeout(() => setCharIdx((c) => c - 1), 32); // Apaga devagar
+      } else {
+        timeout = setTimeout(() => {
+          setTyping(true);
+          setIdx((i) => (i + 1) % texts.length);
+        }, 400); // Pequena pausa antes de digitar a próxima
+      }
+    }
+    setDisplayed(current.slice(0, charIdx));
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line
+  }, [charIdx, typing, idx, texts]);
+
+  // Atualiza texto ao trocar idx (evita bug de frase duplicada)
+  useEffect(() => {
+    setCharIdx(0);
+    setDisplayed('');
+    setTyping(true);
+    // eslint-disable-next-line
+  }, [idx]);
+
   return (
-    <motion.span
-      key={texts[idx]}
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -24 }}
-      transition={{ duration: 1.8, ease: [0.4, 0, 0.2, 1] }} // Mais suave
-      className={className}
-    >
-      {texts[idx]}
-    </motion.span>
+    <span className={className}>
+      {displayed}
+      <span className="inline-block w-2" style={{ color: 'inherit' }}>
+        {showCursor ? '|' : '\u00A0'}
+      </span>
+    </span>
   );
 };
 
@@ -155,7 +193,7 @@ const Index = ({ onAuthModalToggle }) => {
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <span className="block mb-0">
-                <MotionTextRotate
+                <TypingTextRotate
                   texts={[
                     "Descubra a Tradição",
                     "Pergunte, Aprenda",
