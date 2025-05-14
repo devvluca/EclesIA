@@ -634,6 +634,19 @@ const Chat = ({ onAuthModalToggle }) => {
     clearLocalStorage();
   }, []);
 
+  // Sempre rola para o topo ao montar, e também quando o carregamento do banco termina e o chat aparece
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (!isDbLoading) {
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 0);
+    }
+  }, [isDbLoading]);
+
   // Bloqueio de acesso se não estiver logado
   if (!loading && !user) {
     return (
@@ -832,28 +845,45 @@ const Chat = ({ onAuthModalToggle }) => {
   };
 
   // Renderiza um item de chat individual
+  // Corrige: long press/tap seguro para mobile, sem hooks, com variáveis de controle por evento
   const renderChatItem = (chat: { id: string; name: string; messages: Message[]; created_at?: string }, isAboutToDelete = false) => {
     const days = chat.created_at ? getDaysBeforeDeletion(chat.created_at) : null;
-    
-    function handleSelectChat(id: string): void {
-      if (id === currentChatId) return; // If the selected chat is already active, do nothing
-      setCurrentChatId(id); // Update the current chat ID
-      setMessages(chats[id]?.messages || []); // Load the messages for the selected chat
-      setIsSidebarCollapsed(true); // <-- Minimiza sidebar ao trocar de chat
-    }
 
-    // Long press handler para mobile
-    let longPressTimer: NodeJS.Timeout;
+    // Variáveis de controle por evento
+    let longPressTimer: NodeJS.Timeout | null = null;
+    let longPressTriggered = false;
+
     const handleTouchStart = (e: React.TouchEvent) => {
       if (!isMobile()) return;
+      longPressTriggered = false;
+      // Salva o flag no elemento para acesso no touchend
+      (e.currentTarget as HTMLElement).setAttribute('data-longpress', '0');
       const touch = e.touches[0];
       longPressTimer = setTimeout(() => {
+        longPressTriggered = true;
+        (e.currentTarget as HTMLElement).setAttribute('data-longpress', '1');
         setShowChatOptions({ chatId: chat.id, x: touch.clientX, y: touch.clientY });
       }, 500);
     };
-    const handleTouchEnd = () => {
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
       if (!isMobile()) return;
-      clearTimeout(longPressTimer);
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      // Lê o flag do elemento
+      const wasLongPress = (e.currentTarget as HTMLElement).getAttribute('data-longpress') === '1';
+      (e.currentTarget as HTMLElement).removeAttribute('data-longpress');
+      if (!wasLongPress) {
+        // Toque simples: troca de chat
+        if (chat.id !== currentChatId) {
+          setCurrentChatId(chat.id);
+          setMessages(chats[chat.id]?.messages || []);
+          setIsSidebarCollapsed(true);
+        }
+      }
+      // Se foi long press, não troca de chat
     };
 
     return (
@@ -864,7 +894,15 @@ const Chat = ({ onAuthModalToggle }) => {
             ? 'bg-wood-light text-cream-light shadow-inner'
             : 'hover:bg-wood-light text-cream-light'
         } flex items-center justify-between rounded-lg my-1 ${isAboutToDelete ? 'border border-red-400/40' : ''}`}
-        onClick={() => handleSelectChat(chat.id)}
+        onClick={() => {
+          if (!isMobile()) {
+            if (chat.id !== currentChatId) {
+              setCurrentChatId(chat.id);
+              setMessages(chats[chat.id]?.messages || []);
+              setIsSidebarCollapsed(true);
+            }
+          }
+        }}
         onDoubleClick={() => !isMobile() && setMenuOpenChatId(`rename-${chat.id}`)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}

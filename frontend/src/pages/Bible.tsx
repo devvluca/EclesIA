@@ -143,18 +143,6 @@ const Bible = ({ onAuthModalToggle }) => {
     }
   };
 
-  const handleTextSelection = (event) => {
-    const selection = window.getSelection();
-    const selectedElement = event.target.closest('.space-y-4.text-wood-dark.leading-relaxed'); // Verifica se o elemento pertence à div específica
-
-    if (selection && selection.toString().trim() && selectedElement) {
-      setSelectedText(selection.toString());
-      setIsBoxVisible(true);
-      setBoxPosition({ x: event.pageX, y: event.pageY });
-      setResponse('');
-    }
-  };
-
   const handleVerseTouchStart = (event) => {
     setTouchStartY(event.touches[0].clientY);
     setTouchMoved(false);
@@ -348,7 +336,6 @@ const Bible = ({ onAuthModalToggle }) => {
   return (
     <div
       className="flex flex-col min-h-screen bg-cream-light"
-      onMouseUp={(e) => handleTextSelection(e.nativeEvent)}
       onTouchStart={handleMainTouchStart}
       onTouchMove={handleMainTouchMove}
       onTouchEnd={handleMainTouchEnd}
@@ -525,8 +512,8 @@ const Bible = ({ onAuthModalToggle }) => {
 
         {/* Exibição de Versículos */}
         {verses.length > 0 && (
-          <div className="bg-white/80 p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 mb-16 backdrop-blur-sm"> {/* Ajustado para largura total em mobile */}
-            <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
+          <div className="bg-white/80 p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 mb-16 backdrop-blur-sm select-none">
+            <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base">
               {verses.map((verse) => (
                 <p
                   key={verse.number}
@@ -534,12 +521,13 @@ const Bible = ({ onAuthModalToggle }) => {
                   onTouchMove={handleVerseTouchMove}
                   onTouchEnd={(e) => handleVerseTouchEnd(verse, e)}
                   onClick={(e) => handleVerseClick(verse, e)}
-                  className={`bible-verse relative cursor-pointer transition-all duration-150
+                  className={`bible-verse relative cursor-pointer transition-all duration-150 select-text
                     ${selectedVerse === verse.number ? 'font-bold scale-105 bg-wood/10' : ''}
                   `}
                   style={{
                     borderBottom: selectedVerse === verse.number ? '2px dashed #8B5C2A' : undefined,
                     zIndex: selectedVerse === verse.number ? 10 : undefined,
+                    userSelect: 'none', // Impede seleção de texto
                   }}
                 >
                   <strong>{verse.number}</strong> {verse.text}
