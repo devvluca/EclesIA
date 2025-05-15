@@ -541,8 +541,8 @@ const Bible = ({ onAuthModalToggle }) => {
         {/* Exibição de Versículos */}
         {verses.length > 0 && (
           <div
-            className={`bg-white/80 p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 backdrop-blur-sm select-none
-              ${isPWA ? 'mb-[80px]' : 'mb-16'}`}
+            className="bg-white/80 p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 backdrop-blur-sm select-none"
+            style={{ marginBottom: isPWA ? 80 : 64 }} // 80px para PWA, 64px (mb-16) para web normal
           >
             <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base">
               {verses.map((verse) => (
