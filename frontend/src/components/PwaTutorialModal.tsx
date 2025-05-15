@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 
 // Importe as imagens anexadas
 import demoPwa from '/img/demo_pwa.jpg';
-import tutorial1 from '/img/tutorial_4.jpg'; // print do Safari com seta para compartilhar
-import tutorial2 from '/img/tutorial_3.jpg'; // print do menu compartilhar com seta para "Adicionar à Tela de Início"
-import tutorial3 from '/img/tutorial_2.jpg'; // print da tela "Adicionar à Tela de Início" com seta para "Adicionar"
-import tutorial4 from '/img/tutorial_1.jpg'; // print do app instalado na home do iPhone
+import tutorial1 from '/img/tutorial_1.jpg'; // print do Safari com seta para compartilhar
+import tutorial2 from '/img/tutorial_2.jpg'; // print do menu compartilhar com seta para "Adicionar à Tela de Início"
+import tutorial3 from '/img/tutorial_3.jpg'; // print da tela "Adicionar à Tela de Início" com seta para "Adicionar"
+import tutorial4 from '/img/tutorial_4.jpg'; // print do app instalado na home do iPhone
 
 const tutorialScreens = [
   {
@@ -74,8 +74,12 @@ const PwaTutorialModal: React.FC = () => {
           <img
             src={tutorialScreens[step].img}
             alt={tutorialScreens[step].title}
-            className={`rounded-xl mb-3 object-contain ${step === 0 ? 'h-40' : 'h-56'} w-auto`}
-            style={{ maxWidth: '100%' }}
+            className={`rounded-xl mb-3 object-contain`}
+            style={{
+              maxWidth: '100%',
+              width: '320px',
+              height: step === 0 ? '200px' : '320px',
+            }}
           />
           <h3 className="text-lg font-bold text-wood-dark mb-1 text-center">{tutorialScreens[step].title}</h3>
           <p className="text-wood-dark/80 text-center text-sm mb-2">{tutorialScreens[step].desc}</p>
