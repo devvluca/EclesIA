@@ -13,6 +13,7 @@ import BottomNavBar from '@/components/BottomNavBar';
 import Footer from '@/components/Footer';
 import { AuthProvider } from './context/AuthContext';
 import Settings from '@/pages/Settings';
+import PwaTutorialModal from '@/components/PwaTutorialModal';
 
 const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -33,6 +34,7 @@ const App = () => {
     <AuthProvider>
       <Router>
         <AuthModal isOpen={isAuthModalOpen} onClose={toggleAuthModal} />
+        <PwaTutorialModal />
         <Routes>
           <Route path="/" element={<Index onAuthModalToggle={toggleAuthModal} />} />
           <Route path="/chat" element={<Chat onAuthModalToggle={toggleAuthModal} />} />
