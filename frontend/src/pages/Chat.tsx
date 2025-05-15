@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Square, Plus, ChevronLeft, ChevronRight, Trash, ChevronUp, ChevronDown, AlertTriangle, Edit } from 'lucide-react'; // Adicionado Edit
+import { Send, Square, Plus, ChevronLeft, ChevronRight, Trash, ChevronUp, ChevronDown, AlertTriangle, Edit, MoreHorizontal } from 'lucide-react'; // Adicionado MoreHorizontal
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 
@@ -59,6 +59,7 @@ const Chat = ({ onAuthModalToggle }) => {
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // Modal de confirmação para apagar todos
   const [showChatOptions, setShowChatOptions] = useState<{ chatId: string; x: number; y: number } | null>(null); // Para menu de opções no mobile
   const [renameModal, setRenameModal] = useState<{ chatId: string; value: string } | null>(null); // Modal de renomear no mobile
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
 
   // Estados para animação dos modais
   const [modalAnim, setModalAnim] = useState(false);
@@ -327,6 +328,24 @@ const Chat = ({ onAuthModalToggle }) => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (
+        menuOpenChatId &&
+        !target.closest('.dropdown-trigger') && 
+        !target.closest('.dropdown-menu')
+      ) {
+        setMenuOpenChatId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpenChatId]);
 
   async function generateResponse(message: string, conversationHistory: Message[]): Promise<string> {
     try {
@@ -845,73 +864,57 @@ const Chat = ({ onAuthModalToggle }) => {
   };
 
   // Renderiza um item de chat individual
-  // Corrige: long press/tap seguro para mobile, sem hooks, com variáveis de controle por evento
   const renderChatItem = (chat: { id: string; name: string; messages: Message[]; created_at?: string }, isAboutToDelete = false) => {
     const days = chat.created_at ? getDaysBeforeDeletion(chat.created_at) : null;
 
-    // Variáveis de controle por evento
-    let longPressTimer: NodeJS.Timeout | null = null;
-    let longPressTriggered = false;
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-      if (!isMobile()) return;
-      longPressTriggered = false;
-      // Salva o flag no elemento para acesso no touchend
-      (e.currentTarget as HTMLElement).setAttribute('data-longpress', '0');
-      const touch = e.touches[0];
-      longPressTimer = setTimeout(() => {
-        longPressTriggered = true;
-        (e.currentTarget as HTMLElement).setAttribute('data-longpress', '1');
-        setShowChatOptions({ chatId: chat.id, x: touch.clientX, y: touch.clientY });
-      }, 500);
-    };
-
-    const handleTouchEnd = (e: React.TouchEvent) => {
-      if (!isMobile()) return;
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
+    // Handler para abrir o dropdown menu
+    const handleOpenDropdown = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (menuOpenChatId === chat.id) {
+        setMenuOpenChatId(null);
+        return;
       }
-      // Lê o flag do elemento
-      const wasLongPress = (e.currentTarget as HTMLElement).getAttribute('data-longpress') === '1';
-      (e.currentTarget as HTMLElement).removeAttribute('data-longpress');
-      if (!wasLongPress) {
-        // Toque simples: troca de chat
-        if (chat.id !== currentChatId) {
-          setCurrentChatId(chat.id);
-          setMessages(chats[chat.id]?.messages || []);
-          setIsSidebarCollapsed(true);
-        }
+      
+      const button = e.currentTarget;
+      const rect = button.getBoundingClientRect();
+      
+      // Corrige o posicionamento do dropdown para mobile e desktop
+      if (isMobile()) {
+        setDropdownPosition({ 
+          top: rect.bottom, 
+          left: rect.left - 110 // Ajustado para posicionar melhor no mobile
+        });
+      } else {
+        setDropdownPosition({ 
+          top: rect.bottom, 
+          left: rect.left - 110 // Ajustado para desktop
+        });
       }
-      // Se foi long press, não troca de chat
+      
+      setMenuOpenChatId(chat.id);
     };
 
     return (
       <div
         key={chat.id}
-        className={`py-3 px-3 cursor-pointer transition-all duration-300 ${
+        className={`py-3 px-3 cursor-pointer transition-all duration-300 relative group ${
           chat.id === currentChatId
             ? 'bg-wood-light text-cream-light shadow-inner'
             : 'hover:bg-wood-light text-cream-light'
         } flex items-center justify-between rounded-lg my-1 ${isAboutToDelete ? 'border border-red-400/40' : ''}`}
         onClick={() => {
-          if (!isMobile()) {
-            if (chat.id !== currentChatId) {
-              setCurrentChatId(chat.id);
-              setMessages(chats[chat.id]?.messages || []);
-              setIsSidebarCollapsed(true);
-            }
+          if (chat.id !== currentChatId) {
+            setCurrentChatId(chat.id);
+            setMessages(chats[chat.id]?.messages || []);
+            setIsSidebarCollapsed(true);
           }
         }}
-        onDoubleClick={() => !isMobile() && setMenuOpenChatId(`rename-${chat.id}`)}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
         <div className="flex flex-col w-full overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="truncate flex-1">
-              {/* Desktop: inline rename, Mobile: modal */}
-              {menuOpenChatId === `rename-${chat.id}` && !isMobile() ? (
+              {/* Renomear inline */}
+              {menuOpenChatId === `rename-${chat.id}` ? (
                 <input
                   type="text"
                   value={chats[chat.id]?.name || ''}
@@ -921,34 +924,62 @@ const Chat = ({ onAuthModalToggle }) => {
                     if (e.key === 'Enter') setMenuOpenChatId(null);
                   }}
                   className="bg-transparent border-b border-cream-light text-cream-light focus:outline-none focus:border-cream w-full"
+                  onClick={(e) => e.stopPropagation()}
+                  autoFocus
                 />
               ) : (
                 <span className="truncate font-serif text-sm">{chat.name}</span>
               )}
             </div>
-            {/* Ícones só aparecem no desktop */}
-            {!isMobile() && (
-              <div className="flex items-center space-x-1">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpenChatId(`rename-${chat.id}`);
+            
+            {/* Ícone de três pontinhos: oculto no desktop, visível no hover e sempre visível no mobile */}
+            <div className="flex items-center">
+              <button
+                onClick={handleOpenDropdown}
+                className={`text-cream-light/70 hover:text-cream transition-colors p-1 rounded-full dropdown-trigger
+                  ${isMobile() 
+                    ? 'opacity-100' // Sempre visível no mobile
+                    : 'opacity-0 group-hover:opacity-100'} // Visível apenas no hover (desktop)
+                `}
+                aria-label="Opções do chat"
+              >
+                <MoreHorizontal size={14} />
+              </button>
+              
+              {/* Dropdown Menu com cantos arredondados */}
+              {menuOpenChatId === chat.id && dropdownPosition && (
+                <div 
+                  className="fixed bg-wood-dark border border-wood-light shadow-lg rounded-xl overflow-hidden z-50 min-w-[140px] dropdown-menu"
+                  style={{ 
+                    top: `${dropdownPosition.top}px`, 
+                    left: `${dropdownPosition.left}px`
                   }}
-                  className="text-cream-light/70 hover:text-blue-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <Edit size={14} />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteChat(chat.id);
-                  }}
-                  className="text-cream-light/70 hover:text-red-400 transition-colors"
-                >
-                  <Trash size={14} />
-                </button>
-              </div>
-            )}
+                  <button 
+                    className="w-full text-left px-4 py-3 text-cream-light hover:bg-wood-light hover:text-cream-light flex items-center gap-2 text-sm transition-colors duration-200"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpenChatId(`rename-${chat.id}`);
+                    }}
+                  >
+                    <Edit size={14} className="text-blue-300" />
+                    <span>Renomear</span>
+                  </button>
+                  <button 
+                    className="w-full text-left px-4 py-3 text-cream-light hover:bg-red-600 group flex items-center gap-2 text-sm transition-colors duration-200"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteChat(chat.id);
+                      setMenuOpenChatId(null);
+                    }}
+                  >
+                    <Trash size={14} className="text-red-400 group-hover:text-white" />
+                    <span className="group-hover:text-white">Excluir</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           {isAboutToDelete && days !== null && (
             <span className="text-xs text-red-400 mt-1">
@@ -959,6 +990,8 @@ const Chat = ({ onAuthModalToggle }) => {
       </div>
     );
   };
+
+  // Remova todas as funções de long-press do mobile, vamos usar os 3 pontinhos em vez disso
 
   // Handlers para swipe lateral no mobile
   const handleTouchStartMain = (e: React.TouchEvent) => {
