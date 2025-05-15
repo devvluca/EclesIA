@@ -43,14 +43,15 @@ const PwaTutorialModal: React.FC = () => {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    // Só mostra em mobile Safari, fora do modo standalone, e se não foi fechado antes
-    const isMobile = window.innerWidth < 768;
+    // Mostra sempre que for Safari mobile, fora do modo standalone/PWA, nunca no desktop
+    const isMobile = /iPhone|iPad|iPod|iOS/i.test(navigator.userAgent) && window.innerWidth < 900;
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const hide = localStorage.getItem('hidePwaTutorial');
-    if (isMobile && isSafari && !isStandalone && !hide) {
+    const isSafari =
+      /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
+      !/CriOS|FxiOS|OPiOS|mercury|GSA/i.test(navigator.userAgent);
+    if (isMobile && isSafari && !isStandalone) {
       setTimeout(() => setShow(true), 400); // pequeno delay para UX
     }
   }, []);
