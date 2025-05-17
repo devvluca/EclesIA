@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 // Importe as imagens anexadas
-import demoPwa from '/img/demo_pwa.jpg';
-import tutorial1 from '/img/tutorial_1.jpg'; // print do Safari com seta para compartilhar
-import tutorial2 from '/img/tutorial_2.jpg'; // print do menu compartilhar com seta para "Adicionar à Tela de Início"
-import tutorial3 from '/img/tutorial_3.jpg'; // print da tela "Adicionar à Tela de Início" com seta para "Adicionar"
-import tutorial4 from '/img/tutorial_4.jpg'; // print do app instalado na home do iPhone
+import demoPwa from '/img/tutorial_pwa/demo_pwa.jpg';
+import tutorial1 from '/img/tutorial_pwa/tutorial_1.jpg'; // print do Safari com seta para compartilhar
+import tutorial2 from '/img/tutorial_pwa/tutorial_2.jpg'; // print do menu compartilhar com seta para "Adicionar à Tela de Início"
+import tutorial3 from '/img/tutorial_pwa/tutorial_3.jpg'; // print da tela "Adicionar à Tela de Início" com seta para "Adicionar"
+import tutorial4 from '/img/tutorial_pwa/tutorial_4.jpg'; // print do app instalado na home do iPhone
 
 const tutorialScreens = [
   {
