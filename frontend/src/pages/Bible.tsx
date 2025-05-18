@@ -7,6 +7,61 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext'; // Adicione este import
 import BottomNavBar from '@/components/BottomNavBar';
 
+const BIBLE_GROUPS = [
+  {
+    title: 'Antigo Testamento',
+    color: '', // Remover cor de fundo
+    groups: [
+      {
+        subtitle: 'Pentateuco',
+        books: ['gn', 'ex', 'lv', 'nm', 'dt'],
+      },
+      {
+        subtitle: 'Históricos',
+        books: ['js', 'jz', 'rt', '1sm', '2sm', '1rs', '2rs', '1cr', '2cr', 'ed', 'ne', 'et'],
+      },
+      {
+        subtitle: 'Poéticos',
+        books: ['jó', 'sl', 'pv', 'ec', 'ct'],
+      },
+      {
+        subtitle: 'Profetas Maiores',
+        books: ['is', 'jr', 'lm', 'ez', 'dn'],
+      },
+      {
+        subtitle: 'Profetas Menores',
+        books: ['os', 'jl', 'am', 'ob', 'jn', 'mq', 'na', 'hc', 'sf', 'ag', 'zc', 'ml'],
+      },
+    ],
+  },
+  {
+    title: 'Novo Testamento',
+    color: '', // Remover cor de fundo
+    groups: [
+      {
+        subtitle: 'Evangelhos',
+        books: ['mt', 'mc', 'lc', 'jo'],
+      },
+      {
+        subtitle: 'Histórico',
+        books: ['at'],
+      },
+      {
+        subtitle: 'Cartas de Paulo',
+        books: ['rm', '1co', '2co', 'gl', 'ef', 'fp', 'cl', '1ts', '2ts', '1tm', '2tm', 'tt', 'fm'],
+      },
+      {
+        subtitle: 'Outras Cartas',
+        books: ['hb', 'tg', '1pe', '2pe', '1jo', '2jo', '3jo', 'jd'],
+      },
+      {
+        subtitle: 'Profecia',
+        books: ['ap'],
+      },
+    ],
+  },
+];
+
 const Bible = ({ onAuthModalToggle }) => {
   const { user, loading } = useAuth(); // Adicione esta linha
   const [books, setBooks] = useState([]);
@@ -399,9 +454,9 @@ const Bible = ({ onAuthModalToggle }) => {
             </button>
           </div>
           {showSelector && (
-            <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-full sm:w-[28rem]"> {/* Responsivo para largura total em mobile */}
+            <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg p-6 z-10 max-h-96 overflow-y-auto w-full sm:w-[28rem]">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-center text-wood-dark font-bold text-sm sm:text-base"> {/* Texto menor em telas pequenas */}
+                <h3 className="text-center text-wood-dark font-bold text-sm sm:text-base">
                   {isSelectingBook ? 'Selecione um Livro' : 'Selecione um Capítulo'}
                 </h3>
                 <button
@@ -411,37 +466,64 @@ const Bible = ({ onAuthModalToggle }) => {
                   <X size={20} />
                 </button>
               </div>
-              <div
-                className={`grid ${
-                  isSelectingBook ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-4 sm:grid-cols-6'
-                } gap-3`} // Ajustado para menos colunas em telas pequenas
-              >
-                {isSelectingBook
-                  ? books.map((book) => (
-                      <button
-                        key={book.abbrev.pt}
-                        onClick={() => handleBookSelect(book)}
-                        className="w-full sm:w-auto py-1.5 px-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200" // Texto menor em telas pequenas
-                        style={{ minHeight: '3rem' }}
-                      >
-                        {book.name}
-                      </button>
-                    ))
-                  : chapters.map((chapter) => (
-                        <button
-                          key={chapter}
-                          onClick={() => handleChapterSelect(chapter)}
-                          className={`w-full sm:w-auto py-1.5 px-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200 ${
-                            chapter === selectedChapter
-                              ? 'bg-wood-dark text-cream-light'
-                              : 'bg-wood text-cream-light hover:bg-wood-dark'
-                          }`}
-                          style={{ minHeight: '3rem' }}
-                        >
-                          {chapter}
-                        </button>
-                      ))}
-              </div>
+              {/* Novo: Agrupamento visual dos livros */}
+              {isSelectingBook ? (
+                <div className="space-y-6">
+                  {BIBLE_GROUPS.map((mainGroup, i) => (
+                    <div
+                      key={mainGroup.title}
+                      className="rounded-xl p-3 pb-2 bg-white/80 shadow-inner border border-wood/10"
+                    >
+                      <h4 className="text-lg font-bold text-wood-dark mb-2 tracking-wide border-b border-wood/20 pb-1">
+                        {mainGroup.title}
+                      </h4>
+                      <div className="space-y-3">
+                        {mainGroup.groups.map((sub, j) => (
+                          <div key={sub.subtitle}>
+                            <div className="text-xs font-semibold text-wood-dark/80 mb-1 ml-1 uppercase tracking-wider">
+                              {sub.subtitle}
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 mb-2">
+                              {sub.books.map((abbrev) => {
+                                const book = books.find((b) => b.abbrev.pt === abbrev);
+                                if (!book) return null;
+                                return (
+                                  <button
+                                    key={book.abbrev.pt}
+                                    onClick={() => handleBookSelect(book)}
+                                    className={`py-1 px-1 rounded-lg font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow group hover:brightness-110 hover:shadow-xl focus:brightness-110 focus:shadow-xl active:brightness-95 active:shadow transition-all duration-200 text-xs sm:text-sm w-full`}
+                                    style={{ minHeight: '2.2rem' }}
+                                  >
+                                    {book.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                  {/* Seletor de capítulos padrão */}
+                  {chapters.map((chapter) => (
+                    <button
+                      key={chapter}
+                      onClick={() => handleChapterSelect(chapter)}
+                      className={`w-full sm:w-auto py-1.5 px-1 rounded-xl font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/90 to-wood-dark/80 shadow-xl group hover:brightness-110 hover:shadow-2xl focus:brightness-110 focus:shadow-2xl active:brightness-95 active:shadow-lg transition-all duration-200 ${
+                        chapter === selectedChapter
+                          ? 'bg-wood-dark text-cream-light'
+                          : 'bg-wood text-cream-light hover:bg-wood-dark'
+                      }`}
+                      style={{ minHeight: '3rem' }}
+                    >
+                      {chapter}
+                    </button>
+                  ))}
+                </div>
+              )}
               <Button
                 onClick={() => setShowSelector(false)}
                 className="mt-4 bg-wood text-cream-light font-semibold bg-gradient-to-r from-wood-dark/90 via-wood-dark/50 to-wood-dark/80 hover:bg-wood-dark w-full"
@@ -542,7 +624,7 @@ const Bible = ({ onAuthModalToggle }) => {
         {verses.length > 0 && (
           <div
             className={`bg-white/80 p-4 sm:p-6 rounded-lg shadow-lg max-w-full sm:max-w-4xl mx-auto mt-4 backdrop-blur-sm select-none
-              ${isPWA ? 'mb-[20rem]' : 'mb-16'}`}
+              ${isPWA ? 'mb-[30rem]' : 'mb-16'}`}
           >
             <div className="space-y-4 text-wood-dark leading-relaxed text-sm sm:text-base">
               {verses.map((verse) => (
