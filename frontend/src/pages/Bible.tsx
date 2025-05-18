@@ -71,7 +71,10 @@ const Bible = ({ onAuthModalToggle }) => {
   const [verses, setVerses] = useState([]);
   const [showSelector, setShowSelector] = useState(false); // Controle para exibir o seletor de livros/capítulos
   const [isSelectingBook, setIsSelectingBook] = useState(true); // Controle para alternar entre livros e capítulos
-  const [selectedText, setSelectedText] = useState(''); // Texto selecionado pelo usuário
+  // Troque selectedVerse por selectedVerses (array)
+  const [selectedVerses, setSelectedVerses] = useState<number[]>([]);
+  // Troque selectedText por selectedTexts (array de textos)
+  const [selectedTexts, setSelectedTexts] = useState<string[]>([]);
   const [isBoxVisible, setIsBoxVisible] = useState(false); // Controle para exibir a mini box flutuante
   const [boxPosition, setBoxPosition] = useState({ x: 0, y: 0 }); // Posição da mini box
   const [input, setInput] = useState(''); // Entrada do usuário na mini box
@@ -79,7 +82,6 @@ const Bible = ({ onAuthModalToggle }) => {
   const [isLoading, setIsLoading] = useState(false); // Controle de carregamento da IA
   const [history, setHistory] = useState([]); // Histórico de consultas
   const [isHistoryVisible, setIsHistoryVisible] = useState(false); // Controle para exibir a box de histórico
-  const [selectedVerse, setSelectedVerse] = useState(null); // Versículo selecionado no celular
   const [isPWA, setIsPWA] = useState(false);
 
   const API_URL = 'https://www.abibliadigital.com.br/api';
@@ -155,7 +157,8 @@ const Bible = ({ onAuthModalToggle }) => {
         !e.target.closest('.bible-verse') &&
         !e.target.closest('.mini-box-flutuante')
       ) {
-        setSelectedVerse(null);
+        setSelectedVerses([]);
+        setSelectedTexts([]);
         setIsBoxVisible(false);
       }
     };
@@ -217,8 +220,9 @@ const Bible = ({ onAuthModalToggle }) => {
     if (newChapter > 0 && newChapter <= selectedBook.chapters) {
       setSelectedChapter(newChapter);
       fetchChapter(selectedBook.abbrev.pt, newChapter);
-      setSelectedVerse(null); // Limpa seleção ao trocar capítulo
-      setIsBoxVisible(false); // Fecha a box ao trocar capítulo
+      setSelectedVerses([]);
+      setSelectedTexts([]);
+      setIsBoxVisible(false);
     }
   };
 
@@ -237,20 +241,32 @@ const Bible = ({ onAuthModalToggle }) => {
   // Corrige bug de seleção/desseleção instantânea no mobile
   const handleVerseTouchEnd = (verse, event) => {
     if (!touchMoved) {
-      // Evita que o touch dispare também o click
       event.preventDefault();
       event.stopPropagation();
-      if (selectedVerse === verse.number) {
-        setSelectedVerse(null);
-        setIsBoxVisible(false); // Fechar mini box ao deselecionar
-      } else {
-        setSelectedVerse(verse.number);
-        setSelectedText(verse.text);
-        const rect = event.target.getBoundingClientRect();
-        setBoxPosition({ x: rect.left + window.scrollX, y: rect.bottom + window.scrollY + 16 }); // 16px abaixo
-        setIsBoxVisible(true);
-        setResponse('');
-      }
+      setSelectedVerses((prev) => {
+        if (prev.includes(verse.number)) {
+          // Deseleciona
+          const updated = prev.filter((n) => n !== verse.number);
+          updateSelectedTexts(updated);
+          return updated;
+        } else {
+          // Seleciona
+          const updated = [...prev, verse.number].sort((a, b) => a - b);
+          updateSelectedTexts(updated);
+          // Move a mini box para o último selecionado
+          setTimeout(() => {
+            const last = updated[updated.length - 1];
+            const el = document.querySelector(`[data-verse="${last}"]`);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              setBoxPosition({ x: rect.left + window.scrollX, y: rect.bottom + window.scrollY + 16 });
+            }
+          }, 0);
+          setIsBoxVisible(true);
+          setResponse('');
+          return updated;
+        }
+      });
     }
   };
 
@@ -258,72 +274,62 @@ const Bible = ({ onAuthModalToggle }) => {
   const handleVerseClick = (verse, e) => {
     // Evita que o click duplo (após touch) aconteça
     if (e.detail > 1) return;
-    if (selectedVerse === verse.number) {
-      setSelectedVerse(null);
-      setIsBoxVisible(false); // Fechar mini box ao deselecionar
-    } else {
-      setSelectedVerse(verse.number);
-      setSelectedText(verse.text);
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
-      setBoxPosition({
-        x: rect.left + window.scrollX,
-        y: rect.bottom + window.scrollY + 16, // 16px abaixo
-      });
-      setIsBoxVisible(true);
-      setResponse('');
-    }
-  };
-
-  // Novo: handlers para swipe horizontal (capítulos)
-  // Corrigido: bloqueia swipe enquanto está carregando capítulo
-  const handleMainTouchStart = (event) => {
-    if (isFetchingChapter.current) return;
-    if (event.touches && event.touches.length === 1) {
-      setTouchStartX(event.touches[0].clientX);
-      setTouchEndX(event.touches[0].clientX);
-      setIsSwiping(false);
-    }
-  };
-
-  const handleMainTouchMove = (event) => {
-    if (isFetchingChapter.current) return;
-    if (event.touches && event.touches.length === 1) {
-      setTouchEndX(event.touches[0].clientX);
-      // Se o movimento for significativo, considera como swipe
-      if (Math.abs(event.touches[0].clientX - touchStartX) > 20) {
-        setIsSwiping(true);
+    setSelectedVerses((prev) => {
+      if (prev.includes(verse.number)) {
+        // Deseleciona
+        const updated = prev.filter((n) => n !== verse.number);
+        updateSelectedTexts(updated);
+        return updated;
+      } else {
+        // Seleciona
+        const updated = [...prev, verse.number].sort((a, b) => a - b);
+        updateSelectedTexts(updated);
+        // Move a mini box para o último selecionado
+        setTimeout(() => {
+          const last = updated[updated.length - 1];
+          const el = document.querySelector(`[data-verse="${last}"]`);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            setBoxPosition({ x: rect.left + window.scrollX, y: rect.bottom + window.scrollY + 16 });
+          }
+        }, 0);
+        setIsBoxVisible(true);
+        setResponse('');
+        return updated;
       }
-    }
+    });
   };
 
-  const handleMainTouchEnd = () => {
-    if (isFetchingChapter.current) return;
-    const diff = touchEndX - touchStartX;
-    if (Math.abs(diff) > 40) { // threshold para swipe
-      if (diff < 0) {
-        // Swipe para esquerda: próximo capítulo
-        handleChapterChange(1);
-      } else if (diff > 0) {
-        // Swipe para direita: capítulo anterior
-        handleChapterChange(-1);
-      }
+  // Atualize selectedTexts ao selecionar/deselecionar
+  const updateSelectedTexts = (verseNumbers: number[]) => {
+    if (!verses || !verseNumbers.length) {
+      setSelectedTexts([]);
+      setIsBoxVisible(false);
+      return;
     }
-    setTouchStartX(0);
-    setTouchEndX(0);
-    setTimeout(() => setIsSwiping(false), 100); // Libera seleção após swipe
+    const texts = verseNumbers
+      .map((num) => {
+        const v = verses.find((v) => v.number === num);
+        return v ? v.text : '';
+      })
+      .filter(Boolean);
+    setSelectedTexts(texts);
+    if (texts.length === 0) setIsBoxVisible(false);
   };
 
-  const addToHistory = (verse, response) => {
-    setHistory((prev) => [...prev, { verse, response }]);
+  // Atualize addToHistory e fetchExplanation para múltiplos versículos
+  const addToHistory = (versesText, response) => {
+    setHistory((prev) => [...prev, { verse: versesText, response }]);
   };
 
   const fetchExplanation = async () => {
-    if (!selectedText.trim() || !input.trim()) return;
+    if (!selectedTexts.length || !input.trim()) return;
 
     setIsLoading(true);
     setResponse('');
 
     try {
+      const versesJoined = selectedTexts.map((t, idx) => `(${selectedVerses[idx]}) ${t}`).join(' ');
       const response = await fetch(import.meta.env.VITE_DIFY_API_URL, {
         method: 'POST',
         headers: {
@@ -331,7 +337,7 @@ const Bible = ({ onAuthModalToggle }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: `O texto selecionado é um versículo da Bíblia: "${selectedText}". Pergunta: "${input}"`,
+          query: `Os textos selecionados são versículos da Bíblia: "${versesJoined}". Pergunta: "${input}"`,
           inputs: {},
           response_mode: 'streaming',
           user: 'unique-user-id',
@@ -358,7 +364,7 @@ const Bible = ({ onAuthModalToggle }) => {
           result += decoder.decode(value, { stream: true });
 
           const lines = result.split('\n');
-          result = lines.pop() || ''; // Mantém o último pedaço incompleto para a próxima iteração
+          result = lines.pop() || '';
           for (const line of lines) {
             if (line.startsWith('data:')) {
               const jsonString = line.replace('data: ', '').trim();
@@ -368,7 +374,7 @@ const Bible = ({ onAuthModalToggle }) => {
                   if (parsed.answer) {
                     const plainText = parsed.answer.replace(/[*_~`>#-]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
                     finalAnswer += plainText;
-                    setResponse((prev) => prev + plainText); // Atualiza a resposta dinamicamente
+                    setResponse((prev) => prev + plainText);
                   }
                 } catch (err) {
                   console.error('Erro ao processar o chunk de resposta:', err);
@@ -379,7 +385,7 @@ const Bible = ({ onAuthModalToggle }) => {
         }
       }
 
-      addToHistory(selectedText, finalAnswer); // Adiciona ao histórico
+      addToHistory(versesJoined, finalAnswer);
     } catch (error) {
       console.error('Erro ao obter explicação:', error);
       setResponse('Erro ao obter explicação.');
@@ -414,6 +420,40 @@ const Bible = ({ onAuthModalToggle }) => {
         </main>
       </div>
     );
+  }
+
+  function handleMainTouchStart(event: React.TouchEvent<HTMLDivElement>): void {
+    // Para swipe horizontal de capítulos
+    if (event.touches && event.touches.length === 1) {
+      setTouchStartX(event.touches[0].clientX);
+      setTouchEndX(event.touches[0].clientX);
+      setIsSwiping(false);
+    }
+  }
+
+  function handleMainTouchMove(event: React.TouchEvent<HTMLDivElement>): void {
+    if (event.touches && event.touches.length === 1) {
+      const currentX = event.touches[0].clientX;
+      setTouchEndX(currentX);
+
+      // Detecta swipe horizontal significativo (ex: > 40px)
+      const deltaX = currentX - touchStartX;
+      if (Math.abs(deltaX) > 40 && !isSwiping) {
+        setIsSwiping(true);
+        if (deltaX > 0) {
+          // Swipe para direita (capítulo anterior)
+          handleChapterChange(-1);
+        } else {
+          // Swipe para esquerda (próximo capítulo)
+          handleChapterChange(1);
+        }
+      }
+    }
+  }
+
+  // Adicione esta função para lidar com o término do swipe horizontal
+  function handleMainTouchEnd(event: React.TouchEvent<HTMLDivElement>): void {
+    setIsSwiping(false);
   }
 
   return (
@@ -630,17 +670,18 @@ const Bible = ({ onAuthModalToggle }) => {
               {verses.map((verse) => (
                 <p
                   key={verse.number}
+                  data-verse={verse.number}
                   onTouchStart={handleVerseTouchStart}
                   onTouchMove={handleVerseTouchMove}
                   onTouchEnd={(e) => handleVerseTouchEnd(verse, e)}
                   onClick={(e) => handleVerseClick(verse, e)}
                   className={`bible-verse relative cursor-pointer transition-all duration-150 select-text
-                    ${selectedVerse === verse.number ? 'font-bold scale-105 bg-wood/10' : ''}
+                    ${selectedVerses.includes(verse.number) ? 'font-bold scale-105 bg-wood/10 ring-2 ring-wood/40' : ''}
                   `}
                   style={{
-                    borderBottom: selectedVerse === verse.number ? '2px dashed #8B5C2A' : undefined,
-                    zIndex: selectedVerse === verse.number ? 10 : undefined,
-                    userSelect: 'none', // Impede seleção de texto
+                    borderBottom: selectedVerses.includes(verse.number) ? '2px dashed #8B5C2A' : undefined,
+                    zIndex: selectedVerses.includes(verse.number) ? 10 : undefined,
+                    userSelect: 'none',
                   }}
                 >
                   <strong>{verse.number}</strong> {verse.text}
@@ -651,40 +692,40 @@ const Bible = ({ onAuthModalToggle }) => {
         )}
 
         {/* Mini Box Flutuante */}
-        {isBoxVisible && (
+        {isBoxVisible && selectedVerses.length > 0 && (
           <div
             className="mini-box-flutuante absolute z-50"
             style={{
               top: boxPosition.y,
               left: boxPosition.x,
-              width: '320px', // Mais estreita para ficar mais quadrada
+              width: '320px',
               maxWidth: '95vw',
               minHeight: '0px',
             }}
           >
-            <div
-              className="relative bg-white border border-wood-light rounded-2xl shadow-2xl pb-2 px-2 pt-2"
-            >
+            <div className="relative bg-white border border-wood-light rounded-2xl shadow-2xl pb-2 px-2 pt-2">
               <div className="flex items-center justify-between mb-1 mt-0">
-                {/* Versículo abreviado */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-wrap">
                   <span className="text-xs text-wood-dark">
-                    Pergunte sobre o versículo:
+                    Pergunte sobre os versículos:
                   </span>
-                  {selectedBook && selectedChapter && selectedVerse && (
+                  {selectedBook && selectedChapter && selectedVerses.length > 0 && (
                     <span className="ml-1 px-2 py-0.5 rounded bg-wood/10 text-wood-dark font-bold text-xs border border-wood-light">
-                      {/* Abreviação com primeira maiúscula e segunda minúscula */}
                       {selectedBook.abbrev?.pt
                         ? selectedBook.abbrev.pt.charAt(0).toUpperCase() + selectedBook.abbrev.pt.slice(1).toLowerCase()
                         : selectedBook.abbrev
                           ? selectedBook.abbrev.charAt(0).toUpperCase() + selectedBook.abbrev.slice(1).toLowerCase()
                           : ''
-                      } {selectedChapter}:{selectedVerse}
+                      } {selectedChapter}:{selectedVerses.join(',')}
                     </span>
                   )}
                 </div>
                 <button
-                  onClick={() => setIsBoxVisible(false)}
+                  onClick={() => {
+                    setIsBoxVisible(false);
+                    setSelectedVerses([]);
+                    setSelectedTexts([]);
+                  }}
                   className="text-wood-dark hover:text-wood-darkest rounded-full p-1 transition-colors hover:bg-wood/10"
                   aria-label="Fechar"
                   style={{ marginTop: 0, marginRight: 0 }}
@@ -696,7 +737,7 @@ const Bible = ({ onAuthModalToggle }) => {
                 <textarea
                   className="w-full p-2 border border-wood-light rounded-xl resize-none text-xs sm:text-sm bg-cream-light focus:outline-none focus:ring-2 focus:ring-wood/30 transition-all"
                   rows={2}
-                  placeholder="Digite sua pergunta sobre o texto selecionado..."
+                  placeholder="Digite sua pergunta sobre os textos selecionados..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleInputKeyDown}
