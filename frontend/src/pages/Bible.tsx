@@ -649,7 +649,7 @@ const Bible = ({ onAuthModalToggle }) => {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-wood-dark">Nenhuma consulta realizada ainda.</p>
+              <p className="text-sm text-wood-dark">Nenhuma consulta realizada.</p>
             )}
             <Button
               onClick={() => setIsHistoryVisible(false)}
