@@ -1018,8 +1018,7 @@ const Chat = ({ onAuthModalToggle }) => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEndMain}
     >
-      {/* Esconde a Navbar no PWA */}
-      {!isPWA && <Navbar onAuthModalToggle={onAuthModalToggle} />}
+      <Navbar onAuthModalToggle={onAuthModalToggle} />
       <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto bg-cream rounded-2xl shadow-lg overflow-hidden border border-wood/10 h-[calc(100vh-150px)] flex">
           {/* Sidebar */}
