@@ -22,7 +22,9 @@ const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY; // Adicione essa
 const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
-  const [showNotificationPrompt, setShowNotificationPrompt] = useState(Notification.permission !== 'granted');
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(
+    typeof Notification !== "undefined" && Notification.permission !== 'granted'
+  );
 
   const toggleAuthModal = () => {
     setIsAuthModalOpen(!isAuthModalOpen);
