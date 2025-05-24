@@ -14,7 +14,6 @@ import Footer from '@/components/Footer';
 import { AuthProvider } from './context/AuthContext';
 import Settings from '@/pages/Settings';
 import PwaTutorialModal from '@/components/PwaTutorialModal';
-import NotificationPrompt from '@/components/NotificationPrompt';
 import { supabase } from './supabaseClient';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY; // Adicione essa variável no .env
@@ -22,9 +21,6 @@ const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY; // Adicione essa
 const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
-  const [showNotificationPrompt, setShowNotificationPrompt] = useState(
-    typeof Notification !== "undefined" && Notification.permission !== 'granted'
-  );
 
   const toggleAuthModal = () => {
     setIsAuthModalOpen(!isAuthModalOpen);
@@ -99,14 +95,6 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
         </Routes>
         <InstallPrompt />
-        {showNotificationPrompt && (
-          <NotificationPrompt
-            onPermissionGranted={() => {
-              setShowNotificationPrompt(false);
-              registerPush();
-            }}
-          />
-        )}
         {!isPWA && <Footer />}
         {isPWA && <BottomNavBar isPWA={isPWA} />}
       </Router>

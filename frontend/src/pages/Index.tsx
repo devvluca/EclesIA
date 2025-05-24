@@ -7,6 +7,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import BottomNavBar from '@/components/BottomNavBar';
 import { motion } from 'framer-motion';
+import NotificationPrompt from '@/components/NotificationPrompt';
 
 const getHeroImages = (isMobile: boolean) => [
   isMobile
@@ -110,6 +111,9 @@ const Index = ({ onAuthModalToggle }) => {
   const [currentHero, setCurrentHero] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(
+    typeof Notification !== "undefined" && Notification.permission !== "granted"
+  );
   const carouselInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Atualiza isMobile ao redimensionar
@@ -296,6 +300,18 @@ const Index = ({ onAuthModalToggle }) => {
             </div>
           </div>
         </div>
+        {showNotificationPrompt && (
+          <div className="absolute inset-0 flex items-center justify-center z-50">
+            <NotificationPrompt
+              onPermissionGranted={() => {
+                setShowNotificationPrompt(false);
+                if (typeof window.registerPush === "function") {
+                  window.registerPush();
+                }
+              }}
+            />
+          </div>
+        )}
       </section>
 
       {/* Features and CTA Section */}
