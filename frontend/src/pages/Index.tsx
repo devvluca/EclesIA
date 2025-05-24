@@ -111,7 +111,7 @@ const TypingTextRotate: React.FC<{ texts: string[]; className?: string }> = ({ t
   );
 };
 
-const Index = ({ onAuthModalToggle }) => {
+const Index = ({ onAuthModalToggle, registerPush }) => {
   // Estados para controlar o hover de cada box
   const [hoveredBox, setHoveredBox] = useState<number | null>(null);
   const [isPWA, setIsPWA] = useState(false);
@@ -312,8 +312,8 @@ const Index = ({ onAuthModalToggle }) => {
             <NotificationPrompt
               onPermissionGranted={() => {
                 setShowNotificationPrompt(false);
-                if (typeof window.registerPush === "function") {
-                  window.registerPush();
+                if (typeof registerPush === "function") {
+                  registerPush();
                 }
               }}
             />

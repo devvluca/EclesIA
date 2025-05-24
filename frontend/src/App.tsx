@@ -93,7 +93,7 @@ const App = () => {
         <AuthModal isOpen={isAuthModalOpen} onClose={toggleAuthModal} />
         <PwaTutorialModal />
         <Routes>
-          <Route path="/" element={<Index onAuthModalToggle={toggleAuthModal} />} />
+          <Route path="/" element={<Index onAuthModalToggle={toggleAuthModal} registerPush={registerPush} />} />
           <Route path="/chat" element={<Chat onAuthModalToggle={toggleAuthModal} />} />
           <Route path="/bible" element={<Bible onAuthModalToggle={toggleAuthModal} />} />
           <Route path="/sobre" element={<AboutUs onAuthModalToggle={toggleAuthModal} />} />
