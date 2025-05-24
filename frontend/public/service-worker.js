@@ -78,3 +78,43 @@ self.addEventListener('activate', event => {
     })
   );
 });
+
+// Evento de push: exibe a notificação recebida
+self.addEventListener('push', function(event) {
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = { title: 'EclesIA', body: event.data.text() };
+  }
+  const title = data.title || 'EclesIA';
+  const options = {
+    body: data.body || '',
+    icon: '/img/app_logo.jpeg',
+    badge: '/img/app_logo.jpeg',
+    data: data.url ? { url: data.url } : {},
+  };
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Evento de click na notificação: foca ou abre a URL
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  const url = event.notification.data && event.notification.data.url;
+  if (url) {
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then(windowClients => {
+        for (let client of windowClients) {
+          if (client.url === url && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      })
+    );
+  }
+});
