@@ -9,6 +9,13 @@ import BottomNavBar from '@/components/BottomNavBar';
 import { motion } from 'framer-motion';
 import NotificationPrompt from '@/components/NotificationPrompt';
 
+// Extend the Window interface to include registerPush
+declare global {
+  interface Window {
+    registerPush?: () => void;
+  }
+}
+
 const getHeroImages = (isMobile: boolean) => [
   isMobile
     ? {

@@ -42,11 +42,19 @@ const App = () => {
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
           });
-          await supabase.from('push_subscriptions').upsert({
+          console.log('Subscription criada:', subscription);
+          const { data, error } = await supabase.from('push_subscriptions').upsert({
             endpoint: subscription.endpoint,
             keys: subscription.toJSON().keys,
             created_at: new Date().toISOString(),
           });
+          if (error) {
+            console.error('Erro ao salvar subscription no Supabase:', error);
+          } else {
+            console.log('Subscription salva no Supabase:', data);
+          }
+        } else {
+          console.log('Subscription já existente:', existing);
         }
         // Dispara notificação push de boas-vindas
         try {
