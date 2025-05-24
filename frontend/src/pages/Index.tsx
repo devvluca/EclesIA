@@ -109,6 +109,7 @@ const Index = ({ onAuthModalToggle }) => {
   const [isPWA, setIsPWA] = useState(false);
   const [currentHero, setCurrentHero] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const carouselInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Atualiza isMobile ao redimensionar
@@ -120,6 +121,30 @@ const Index = ({ onAuthModalToggle }) => {
 
   // Atualiza imagens do carrossel conforme o tamanho da tela
   const heroImages = getHeroImages(isMobile);
+
+  // Pré-carregamento dos banners do hero section
+  useEffect(() => {
+    setImagesLoaded(false);
+    let loaded = 0;
+    const imgs = heroImages.map((img) => {
+      const image = new window.Image();
+      image.src = img.url;
+      image.onload = () => {
+        loaded += 1;
+        if (loaded === heroImages.length) setImagesLoaded(true);
+      };
+      image.onerror = () => {
+        loaded += 1;
+        if (loaded === heroImages.length) setImagesLoaded(true);
+      };
+      return image;
+    });
+    // Cleanup
+    return () => {
+      imgs.forEach((img) => { img.onload = null; img.onerror = null; });
+    };
+    // eslint-disable-next-line
+  }, [isMobile]);
 
   useEffect(() => {
     AOS.init({
@@ -154,6 +179,11 @@ const Index = ({ onAuthModalToggle }) => {
       }, 5000);
     }
   };
+
+  if (!imagesLoaded) {
+    // Não renderiza nada até as imagens carregarem
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-cream-light via-cream to-cream-light">
